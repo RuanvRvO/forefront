@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": ["../convex/http.ts"],
+  "mappings": ";;;;;;;;;AAGA,IAAMA,IAAOC,EAAW;AAExBC,EAAK,cAAcF,CAAI;AAEvB,IAAOG,IAAQH;",
+  "names": ["http", "httpRouter", "auth", "http_default"]
+}
