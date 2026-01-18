@@ -19,4 +19,9 @@ export default defineSchema({
     type: v.union(v.literal("Online"), v.literal("In-Person")),
     codaId: v.optional(v.string()), // For tracking the source from Coda
   }).index("by_date", ["date"]),
+  emailSubscribers: defineTable({
+    email: v.string(),
+    subscribedAt: v.number(), // Timestamp
+    source: v.optional(v.string()), // Where they subscribed from (e.g., "landing_page")
+  }).index("by_email", ["email"]),
 });

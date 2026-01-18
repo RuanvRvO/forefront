@@ -2,15 +2,45 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Heart, Users, TrendingUp, Sparkles, Calendar, Clock, MapPin, Video, Mail, MessageCircle, Phone } from 'lucide-react';
 
 export default function LandingPage() {
   const [email, setEmail] = useState('');
+  const [subscribeStatus, setSubscribeStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Fetch meetings from Convex
   const meetings = useQuery(api.meetings.listMeetings) ?? [];
+
+  // Subscribe mutation
+  const subscribe = useMutation(api.emailSubscribers.subscribe);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubscribeStatus('loading');
+    setErrorMessage('');
+
+    try {
+      await subscribe({
+        email,
+        source: 'landing_page',
+      });
+      setSubscribeStatus('success');
+      setEmail(''); // Clear the input
+      // Reset success message after 3 seconds
+      setTimeout(() => setSubscribeStatus('idle'), 3000);
+    } catch (error) {
+      setSubscribeStatus('error');
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to subscribe');
+      // Reset error message after 5 seconds
+      setTimeout(() => {
+        setSubscribeStatus('idle');
+        setErrorMessage('');
+      }, 5000);
+    }
+  };
 
   const values = [
     {
@@ -277,18 +307,36 @@ export default function LandingPage() {
               <p className="text-gray-300 text-sm mb-4">
                 Stay informed about upcoming meetings, special events, and community news.
               </p>
-              <div className="flex gap-2">
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="flex-1 px-4 py-3 rounded-lg bg-slate-600 text-white placeholder-gray-400 border border-slate-500 focus:outline-none focus:border-amber-400"
-                />
-                <button className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg transition-colors">
-                  Subscribe
-                </button>
-              </div>
+              <form onSubmit={handleSubscribe} className="flex flex-col gap-2">
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={subscribeStatus === 'loading'}
+                    className="flex-1 px-4 py-3 rounded-lg bg-slate-600 text-white placeholder-gray-400 border border-slate-500 focus:outline-none focus:border-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                  <button
+                    type="submit"
+                    disabled={subscribeStatus === 'loading'}
+                    className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {subscribeStatus === 'loading' ? 'Subscribing...' : 'Subscribe'}
+                  </button>
+                </div>
+                {subscribeStatus === 'success' && (
+                  <p className="text-green-400 text-sm">
+                    ✓ Successfully subscribed! We&apos;ll keep you updated.
+                  </p>
+                )}
+                {subscribeStatus === 'error' && (
+                  <p className="text-red-400 text-sm">
+                    ✗ {errorMessage}
+                  </p>
+                )}
+              </form>
             </div>
 
             {/* Right side - Contact Info */}
