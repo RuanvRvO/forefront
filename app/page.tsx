@@ -2,77 +2,15 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { useQuery } from "convex/react";
+import { api } from "../convex/_generated/api";
 import { Heart, Users, TrendingUp, Sparkles, Calendar, Clock, MapPin, Video, Mail, MessageCircle, Phone } from 'lucide-react';
 
 export default function LandingPage() {
   const [email, setEmail] = useState('');
 
-  const meetings = [
-    {
-      title: 'Monday Mindset Session',
-      description: 'Start your week with intention. Goal-setting, positive mindset, and weekly planning.',
-      date: 'January 13, 2026',
-      time: '7:00 PM - 8:30 PM',
-      location: 'Online (Zoom)',
-      type: 'Online',
-    },
-    {
-      title: 'Wednesday Wellness Check-In',
-      description: 'Mid-week focus on mental health, stress management, and self-care practices.',
-      date: 'January 15, 2026',
-      time: '6:30 PM - 8:00 PM',
-      location: 'Community Center, Room 204',
-      type: 'In-Person',
-    },
-    {
-      title: 'Friday Wins & Reflections',
-      description: 'Celebrate the week\'s achievements and reflect on lessons learned.',
-      date: 'January 17, 2026',
-      time: '5:00 PM - 6:30 PM',
-      location: 'Online (Zoom)',
-      type: 'Online',
-    },
-    {
-      title: 'Saturday Workshop: Building Resilience',
-      description: 'Extended workshop with guest speaker Dr. Sarah Mitchell on developing mental resilience.',
-      date: 'January 18, 2026',
-      time: '10:00 AM - 1:00 PM',
-      location: 'Community Center, Main Hall',
-      type: 'In-Person',
-    },
-    {
-      title: 'Monday Mindset Session',
-      description: 'Weekly session on goal-setting and positive mindset.',
-      date: 'January 20, 2026',
-      time: '7:00 PM - 8:30 PM',
-      location: 'Online (Zoom)',
-      type: 'Online',
-    },
-    {
-      title: 'Book Club: Atomic Habits Discussion',
-      description: 'Join us to discuss key takeaways from Atomic Habits by James Clear.',
-      date: 'January 22, 2026',
-      time: '7:00 PM - 8:30 PM',
-      location: 'Online (Zoom)',
-      type: 'Online',
-    },
-    {
-      title: 'Monthly Deep Dive: Leadership Skills',
-      description: 'Extended session exploring leadership principles and personal accountability.',
-      date: 'February 1, 2026',
-      time: '10:00 AM - 2:00 PM',
-      location: 'Community Center, Main Hall',
-      type: 'In-Person',
-    },
-    {
-      title: 'Evening Reflection Circle',
-      description: 'Guided reflection and gratitude practice to close out the week.',
-      date: 'February 7, 2026',
-      time: '7:00 PM - 8:30 PM',
-      location: 'Online (Zoom)',
-      type: 'Online',
-    },
-  ];
+  // Fetch meetings from Convex
+  const meetings = useQuery(api.meetings.listMeetings) ?? [];
 
   const values = [
     {
@@ -211,44 +149,51 @@ export default function LandingPage() {
           </p>
 
           {/* Meetings List */}
-          <div className="space-y-4">
-            {meetings.map((meeting, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                  <div className="flex-1">
-                    <h4 className="text-lg font-semibold text-gray-800 mb-1">{meeting.title}</h4>
-                    <p className="text-gray-600 text-sm mb-3">{meeting.description}</p>
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-500">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        {meeting.date}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
-                        {meeting.time}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        {meeting.type === 'Online' ? <Video className="w-4 h-4" /> : <MapPin className="w-4 h-4" />}
-                        {meeting.location}
-                      </span>
+          {meetings.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg">No upcoming meetings scheduled at the moment.</p>
+              <p className="text-gray-400 text-sm mt-2">Check back soon for new sessions!</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {meetings.map((meeting) => (
+                <div
+                  key={meeting._id}
+                  className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                    <div className="flex-1">
+                      <h4 className="text-lg font-semibold text-gray-800 mb-1">{meeting.title}</h4>
+                      <p className="text-gray-600 text-sm mb-3">{meeting.description}</p>
+                      <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-4 h-4" />
+                          {meeting.date}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-4 h-4" />
+                          {meeting.time}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          {meeting.type === 'Online' ? <Video className="w-4 h-4" /> : <MapPin className="w-4 h-4" />}
+                          {meeting.location}
+                        </span>
+                      </div>
                     </div>
+                    <span className={`
+                      px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap self-start
+                      ${meeting.type === 'Online'
+                        ? 'bg-teal-100 text-teal-700'
+                        : 'bg-teal-100 text-teal-700 border border-teal-200'
+                      }
+                    `}>
+                      {meeting.type}
+                    </span>
                   </div>
-                  <span className={`
-                    px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap self-start
-                    ${meeting.type === 'Online'
-                      ? 'bg-teal-100 text-teal-700'
-                      : 'bg-teal-100 text-teal-700 border border-teal-200'
-                    }
-                  `}>
-                    {meeting.type}
-                  </span>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

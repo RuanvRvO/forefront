@@ -10,4 +10,13 @@ export default defineSchema({
   numbers: defineTable({
     value: v.number(),
   }),
+  meetings: defineTable({
+    title: v.string(),
+    description: v.string(),
+    date: v.string(),
+    time: v.string(),
+    location: v.string(),
+    type: v.union(v.literal("Online"), v.literal("In-Person")),
+    codaId: v.optional(v.string()), // For tracking the source from Coda
+  }).index("by_date", ["date"]),
 });

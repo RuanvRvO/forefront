@@ -9,8 +9,12 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as codaSync from "../codaSync.js";
+import type * as cron from "../cron.js";
 import type * as http from "../http.js";
+import type * as meetings from "../meetings.js";
 import type * as myFunctions from "../myFunctions.js";
+import type * as seedMeetings from "../seedMeetings.js";
 
 import type {
   ApiFromModules,
@@ -20,8 +24,12 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  codaSync: typeof codaSync;
+  cron: typeof cron;
   http: typeof http;
+  meetings: typeof meetings;
   myFunctions: typeof myFunctions;
+  seedMeetings: typeof seedMeetings;
 }>;
 
 /**
