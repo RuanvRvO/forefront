@@ -1,234 +1,446 @@
 "use client";
 
-import { useConvexAuth, useMutation, useQuery } from "convex/react";
-import { api } from "../convex/_generated/api";
-import Link from "next/link";
-import { useAuthActions } from "@convex-dev/auth/react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
+import { useState } from 'react';
+import Image from 'next/image';
+import { Heart, Users, TrendingUp, Sparkles, Calendar, Clock, MapPin, Video, Mail, MessageCircle, Phone } from 'lucide-react';
 
-export default function Home() {
+export default function LandingPage() {
+  const [email, setEmail] = useState('');
+
+  const meetings = [
+    {
+      title: 'Monday Mindset Session',
+      description: 'Start your week with intention. Goal-setting, positive mindset, and weekly planning.',
+      date: 'January 13, 2026',
+      time: '7:00 PM - 8:30 PM',
+      location: 'Online (Zoom)',
+      type: 'Online',
+    },
+    {
+      title: 'Wednesday Wellness Check-In',
+      description: 'Mid-week focus on mental health, stress management, and self-care practices.',
+      date: 'January 15, 2026',
+      time: '6:30 PM - 8:00 PM',
+      location: 'Community Center, Room 204',
+      type: 'In-Person',
+    },
+    {
+      title: 'Friday Wins & Reflections',
+      description: 'Celebrate the week\'s achievements and reflect on lessons learned.',
+      date: 'January 17, 2026',
+      time: '5:00 PM - 6:30 PM',
+      location: 'Online (Zoom)',
+      type: 'Online',
+    },
+    {
+      title: 'Saturday Workshop: Building Resilience',
+      description: 'Extended workshop with guest speaker Dr. Sarah Mitchell on developing mental resilience.',
+      date: 'January 18, 2026',
+      time: '10:00 AM - 1:00 PM',
+      location: 'Community Center, Main Hall',
+      type: 'In-Person',
+    },
+    {
+      title: 'Monday Mindset Session',
+      description: 'Weekly session on goal-setting and positive mindset.',
+      date: 'January 20, 2026',
+      time: '7:00 PM - 8:30 PM',
+      location: 'Online (Zoom)',
+      type: 'Online',
+    },
+    {
+      title: 'Book Club: Atomic Habits Discussion',
+      description: 'Join us to discuss key takeaways from Atomic Habits by James Clear.',
+      date: 'January 22, 2026',
+      time: '7:00 PM - 8:30 PM',
+      location: 'Online (Zoom)',
+      type: 'Online',
+    },
+    {
+      title: 'Monthly Deep Dive: Leadership Skills',
+      description: 'Extended session exploring leadership principles and personal accountability.',
+      date: 'February 1, 2026',
+      time: '10:00 AM - 2:00 PM',
+      location: 'Community Center, Main Hall',
+      type: 'In-Person',
+    },
+    {
+      title: 'Evening Reflection Circle',
+      description: 'Guided reflection and gratitude practice to close out the week.',
+      date: 'February 7, 2026',
+      time: '7:00 PM - 8:30 PM',
+      location: 'Online (Zoom)',
+      type: 'Online',
+    },
+  ];
+
+  const values = [
+    {
+      icon: Heart,
+      title: 'Self-Care First',
+      description: 'We believe that to help others, we must first help ourselves. Personal growth is the foundation of collective impact.',
+    },
+    {
+      icon: Users,
+      title: 'Community Support',
+      description: 'Together we&apos;re stronger. Our community provides a safe space for growth, learning, and mutual encouragement.',
+    },
+    {
+      icon: TrendingUp,
+      title: 'Continuous Growth',
+      description: 'Improvement is a journey, not a destination. We celebrate progress and support each other through challenges.',
+    },
+    {
+      icon: Sparkles,
+      title: 'Positive Impact',
+      description: 'As we uplift ourselves, we naturally uplift those around us, creating a ripple effect of positive change.',
+    },
+  ];
+
   return (
-    <>
-      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md p-4 border-b border-slate-200 dark:border-slate-700 flex flex-row justify-between items-center shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-3">
-            <Image src="/convex.svg" alt="Convex Logo" width={32} height={32} />
-            <div className="w-px h-8 bg-slate-300 dark:bg-slate-600"></div>
-            <Image
-              src="/nextjs-icon-light-background.svg"
-              alt="Next.js Logo"
-              width={32}
-              height={32}
-              className="dark:hidden"
-            />
-            <Image
-              src="/nextjs-icon-dark-background.svg"
-              alt="Next.js Logo"
-              width={32}
-              height={32}
-              className="hidden dark:block"
-            />
-          </div>
-          <h1 className="font-semibold text-slate-800 dark:text-slate-200">
-            Convex + Next.js + Convex Auth
-          </h1>
-        </div>
-        <SignOutButton />
-      </header>
-      <main className="p-8 flex flex-col gap-8">
-        <Content />
-      </main>
-    </>
-  );
-}
-
-function SignOutButton() {
-  const { isAuthenticated } = useConvexAuth();
-  const { signOut } = useAuthActions();
-  const router = useRouter();
-  return (
-    <>
-      {isAuthenticated && (
-        <button
-          className="bg-slate-600 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
-          onClick={() =>
-            void signOut().then(() => {
-              router.push("/signin");
-            })
-          }
-        >
-          Sign out
-        </button>
-      )}
-    </>
-  );
-}
-
-function Content() {
-  const { viewer, numbers } =
-    useQuery(api.myFunctions.listNumbers, {
-      count: 10,
-    }) ?? {};
-  const addNumber = useMutation(api.myFunctions.addNumber);
-
-  if (viewer === undefined || numbers === undefined) {
-    return (
-      <div className="mx-auto">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
-          <div
-            className="w-2 h-2 bg-slate-500 rounded-full animate-bounce"
-            style={{ animationDelay: "0.1s" }}
-          ></div>
-          <div
-            className="w-2 h-2 bg-slate-600 rounded-full animate-bounce"
-            style={{ animationDelay: "0.2s" }}
-          ></div>
-          <p className="ml-2 text-slate-600 dark:text-slate-400">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col gap-4 max-w-lg mx-auto">
-      <div>
-        <h2 className="font-bold text-xl text-slate-800 dark:text-slate-200">
-          Welcome {viewer ?? "Anonymous"}!
-        </h2>
-        <p className="text-slate-600 dark:text-slate-400 mt-2">
-          You are signed into a demo application using Convex Auth.
-        </p>
-        <p className="text-slate-600 dark:text-slate-400 mt-1">
-          This app can generate random numbers and store them in your Convex
-          database.
-        </p>
-      </div>
-
-      <div className="h-px bg-slate-200 dark:bg-slate-700"></div>
-
-      <div className="flex flex-col gap-4">
-        <h2 className="font-semibold text-xl text-slate-800 dark:text-slate-200">
-          Number generator
-        </h2>
-        <p className="text-slate-600 dark:text-slate-400 text-sm">
-          Click the button below to generate a new number. The data is persisted
-          in the Convex cloud database - open this page in another window and
-          see the data sync automatically!
-        </p>
-        <button
-          className="bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-500 text-white text-sm font-medium px-6 py-3 rounded-lg cursor-pointer transition-all duration-200 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
-          onClick={() => {
-            void addNumber({ value: Math.floor(Math.random() * 10) });
+    <div className="min-h-screen font-sans">
+      {/* Hero Section */}
+      <section className="relative min-h-screen flex items-center justify-center">
+        {/* Background Image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url('/hero-mountains.jpg')`,
+            backgroundColor: '#2d3748',
           }}
         >
-          + Generate random number
-        </button>
-        <div className="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl p-4 shadow-sm">
-          <p className="font-semibold text-slate-800 dark:text-slate-200 mb-2">
-            Newest Numbers
-          </p>
-          <p className="text-slate-700 dark:text-slate-300 font-mono text-lg">
-            {numbers?.length === 0
-              ? "Click the button to generate a number!"
-              : (numbers?.join(", ") ?? "...")}
-          </p>
+          <div className="absolute inset-0 bg-slate-800/60"></div>
         </div>
-      </div>
 
-      <div className="h-px bg-slate-200 dark:bg-slate-700"></div>
-
-      <div className="flex flex-col gap-4">
-        <h2 className="font-semibold text-xl text-slate-800 dark:text-slate-200">
-          Making changes
-        </h2>
-        <p className="text-slate-600 dark:text-slate-400 text-sm">
-          Edit{" "}
-          <code className="text-sm font-semibold font-mono bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2 py-1 rounded-md border border-slate-300 dark:border-slate-600">
-            convex/myFunctions.ts
-          </code>{" "}
-          to change the backend.
-        </p>
-        <p className="text-slate-600 dark:text-slate-400 text-sm">
-          Edit{" "}
-          <code className="text-sm font-semibold font-mono bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2 py-1 rounded-md border border-slate-300 dark:border-slate-600">
-            app/page.tsx
-          </code>{" "}
-          to change the frontend.
-        </p>
-        <p className="text-slate-600 dark:text-slate-400 text-sm">
-          See the{" "}
-          <Link
-            href="/server"
-            className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 font-medium underline decoration-2 underline-offset-2 transition-colors"
-          >
-            /server route
-          </Link>{" "}
-          for an example of loading data in a server component
-        </p>
-      </div>
-
-      <div className="h-px bg-slate-200 dark:bg-slate-700"></div>
-
-      <div className="flex flex-col gap-4">
-        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">
-          Useful resources
-        </h2>
-        <div className="flex gap-4">
-          <div className="flex flex-col gap-4 w-1/2">
-            <ResourceCard
-              title="Convex docs"
-              description="Read comprehensive documentation for all Convex features."
-              href="https://docs.convex.dev/home"
-            />
-            <ResourceCard
-              title="Stack articles"
-              description="Learn about best practices, use cases, and more from a growing
-            collection of articles, videos, and walkthroughs."
-              href="https://stack.convex.dev"
-            />
+        {/* Hero Content */}
+        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-light text-white mb-2">
+            Uplift Others by
+          </h1>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-light text-amber-400 italic mb-6">
+            Uplifting Ourselves
+          </h1>
+          <p className="text-lg md:text-xl text-gray-200 mb-10 max-w-2xl mx-auto">
+            Join a community dedicated to personal growth, mutual support, and collective empowerment.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+            <a
+              href="#schedule"
+              className="px-8 py-3 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg transition-colors w-full sm:w-48 text-center"
+            >
+              View Schedule
+            </a>
+            <a
+              href="#mission"
+              className="px-8 py-3 bg-white/10 hover:bg-white/20 text-white font-medium rounded-lg border border-white/30 transition-colors w-full sm:w-48 text-center"
+            >
+              Learn More
+            </a>
           </div>
-          <div className="flex flex-col gap-4 w-1/2">
-            <ResourceCard
-              title="Templates"
-              description="Browse our collection of templates to get started quickly."
-              href="https://www.convex.dev/templates"
-            />
-            <ResourceCard
-              title="Discord"
-              description="Join our developer community to ask questions, trade tips & tricks,
-            and show off your projects."
-              href="https://www.convex.dev/community"
-            />
+
+          {/* Scroll indicator */}
+          <div className="animate-bounce">
+            <svg className="w-6 h-6 text-white mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Our Mission Section */}
+      <section id="mission" className="py-20 bg-white">
+        <div className="max-w-6xl mx-auto px-4">
+          <h2 className="text-3xl md:text-4xl font-semibold text-center text-gray-800 mb-6">
+            Our Mission
+          </h2>
+          <p className="text-center text-gray-600 max-w-3xl mx-auto mb-16">
+            We&apos;re building a movement of individuals committed to personal development and mutual support. By investing in ourselves, we create stronger communities and a better world.
+          </p>
+
+          {/* Who We Are - Image and Text */}
+          <div className="flex flex-col lg:flex-row gap-12 items-center mb-20">
+            <div className="lg:w-1/2">
+              <Image
+                src="/scrabble-quote.jpg"
+                alt="Love People Use Things - The Opposite Never Works"
+                width={500}
+                height={500}
+                className="rounded-xl shadow-lg w-full max-w-md mx-auto"
+              />
+            </div>
+            <div className="lg:w-1/2">
+              <h3 className="text-2xl font-semibold text-gray-800 mb-6">Who We Are</h3>
+              <p className="text-gray-600 mb-4">
+                We&apos;re a diverse group of individuals from all walks of life, united by a common goal: to become the best versions of ourselves while helping others do the same.
+              </p>
+              <p className="text-gray-600 mb-4">
+                Our approach is simple but powerful. We start with ourselves—working on our mindset, habits, and personal development. As we grow, we share our experiences, support one another, and create a culture of continuous improvement.
+              </p>
+              <p className="text-gray-600">
+                Whether you&apos;re just starting your personal development journey or you&apos;ve been on this path for years, you&apos;ll find a welcoming community here.
+              </p>
+            </div>
+          </div>
+
+          {/* Values Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {values.map((value, index) => (
+              <div
+                key={index}
+                className="bg-amber-50/50 rounded-xl p-6 hover:shadow-lg transition-shadow"
+              >
+                <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mb-4">
+                  <value.icon className="w-7 h-7 text-amber-600" />
+                </div>
+                <h4 className="text-lg font-semibold text-gray-800 mb-2">{value.title}</h4>
+                <p className="text-gray-600 text-sm">{value.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Upcoming Meetings Section */}
+      <section id="schedule" className="py-20 bg-amber-50/30">
+        <div className="max-w-4xl mx-auto px-4">
+          <h2 className="text-3xl md:text-4xl font-semibold text-center text-gray-800 mb-4">
+            Upcoming Meetings
+          </h2>
+          <p className="text-center text-gray-600 mb-12">
+            Join us at any of our upcoming sessions. All meetings are open to new members. Dates and times are listed below.
+          </p>
+
+          {/* Meetings List */}
+          <div className="space-y-4">
+            {meetings.map((meeting, index) => (
+              <div
+                key={index}
+                className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                  <div className="flex-1">
+                    <h4 className="text-lg font-semibold text-gray-800 mb-1">{meeting.title}</h4>
+                    <p className="text-gray-600 text-sm mb-3">{meeting.description}</p>
+                    <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-4 h-4" />
+                        {meeting.date}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-4 h-4" />
+                        {meeting.time}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        {meeting.type === 'Online' ? <Video className="w-4 h-4" /> : <MapPin className="w-4 h-4" />}
+                        {meeting.location}
+                      </span>
+                    </div>
+                  </div>
+                  <span className={`
+                    px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap self-start
+                    ${meeting.type === 'Online'
+                      ? 'bg-teal-100 text-teal-700'
+                      : 'bg-teal-100 text-teal-700 border border-teal-200'
+                    }
+                  `}>
+                    {meeting.type}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* First Time Joining Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="bg-amber-50/50 rounded-xl p-8">
+            <h3 className="text-2xl font-semibold text-gray-800 mb-8">First Time Joining?</h3>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <h4 className="font-semibold text-gray-800 mb-4">What to Expect</h4>
+                <ul className="space-y-3 text-gray-600">
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400">•</span>
+                    Welcoming and judgment-free environment
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400">•</span>
+                    Facilitated discussions and activities
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400">•</span>
+                    Opportunity to share or just listen
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400">•</span>
+                    Connection with like-minded individuals
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold text-gray-800 mb-4">How to Join</h4>
+                <ul className="space-y-3 text-gray-600">
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400">•</span>
+                    No registration required for first visit
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400">•</span>
+                    Simply show up to any meeting that interests you
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400">•</span>
+                    For online meetings, email us for the link
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400">•</span>
+                    Bring an open mind and positive energy
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-slate-700 relative overflow-hidden">
+        {/* Background subtle pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage: `url('/hero-mountains.jpg')`,
+            }}
+          ></div>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 relative z-10">
+          <div className="flex flex-col lg:flex-row gap-12">
+            {/* Left side - CTA */}
+            <div className="lg:w-1/2">
+              <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4">
+                Ready to Start Your Journey?
+              </h2>
+              <p className="text-gray-300 mb-8">
+                Join our community today and take the first step towards personal growth and collective upliftment.
+              </p>
+
+              <h4 className="text-lg font-medium text-amber-400 mb-4">Get Updates</h4>
+              <p className="text-gray-300 text-sm mb-4">
+                Stay informed about upcoming meetings, special events, and community news.
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="flex-1 px-4 py-3 rounded-lg bg-slate-600 text-white placeholder-gray-400 border border-slate-500 focus:outline-none focus:border-amber-400"
+                />
+                <button className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg transition-colors">
+                  Subscribe
+                </button>
+              </div>
+            </div>
+
+            {/* Right side - Contact Info */}
+            <div className="lg:w-1/2">
+              <div className="bg-white rounded-xl p-8">
+                <h3 className="text-xl font-semibold text-gray-800 mb-6">Get In Touch</h3>
+
+                <div className="space-y-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Mail className="w-5 h-5 text-amber-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-gray-800">Email Us</h4>
+                      <p className="text-amber-600">info@forefront.org</p>
+                      <p className="text-gray-500 text-sm">We typically respond within 24 hours</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <MessageCircle className="w-5 h-5 text-amber-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-gray-800">Join Our Community</h4>
+                      <p className="text-gray-600 text-sm">Connect with members on our Discord server</p>
+                      <a href="#" className="text-amber-600 hover:underline">discord.gg/qsb6afSs</a>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Phone className="w-5 h-5 text-amber-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-gray-800">Questions?</h4>
+                      <p className="text-gray-600 text-sm">Schedule a call with our team</p>
+                      <a href="#" className="text-amber-600 hover:underline">Book a conversation</a>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="mt-8 text-gray-500 italic text-sm border-t pt-6">
+                  &quot;The journey of a thousand miles begins with a single step. Take yours with us.&quot;
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-slate-800 py-16">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            {/* Brand */}
+            <div>
+              <h3 className="text-xl font-semibold text-white mb-4">Forefront</h3>
+              <p className="text-gray-400 text-sm">
+                A community dedicated to personal growth and collective empowerment. We believe in uplifting ourselves to uplift others.
+              </p>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h4 className="text-white font-medium mb-4">Quick Links</h4>
+              <ul className="space-y-2">
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">About Us</a></li>
+                <li><a href="#schedule" className="text-gray-400 hover:text-white transition-colors">Meeting Schedule</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Our Values</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Contact</a></li>
+              </ul>
+            </div>
+
+            {/* Connect */}
+            <div>
+              <h4 className="text-white font-medium mb-4">Connect</h4>
+              <ul className="space-y-2">
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Facebook</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Instagram</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">LinkedIn</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Discord Community</a></li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom */}
+          <div className="mt-12 pt-8 border-t border-slate-700 text-center">
+            <p className="text-gray-400 text-sm">
+              Made with <span className="text-red-500">❤</span> by people who believe in growth
+            </p>
+            <p className="text-gray-500 text-xs mt-2">
+              © 2026 Forefront. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
-  );
-}
-
-function ResourceCard({
-  title,
-  description,
-  href,
-}: {
-  title: string;
-  description: string;
-  href: string;
-}) {
-  return (
-    <a
-      href={href}
-      className="flex flex-col gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 p-5 rounded-xl h-36 overflow-auto border border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500 shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02] group cursor-pointer"
-      target="_blank"
-    >
-      <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-slate-100 transition-colors">
-        {title} →
-      </h3>
-      <p className="text-xs text-slate-600 dark:text-slate-400">
-        {description}
-      </p>
-    </a>
   );
 }
