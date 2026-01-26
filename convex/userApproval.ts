@@ -17,22 +17,16 @@ export const getUserApprovalStatus = query({
       return null;
     }
 
-    // Get the user from the users table
-    const users = await ctx.db
-      .query("users")
-      .filter((q) => q.eq(q.field("email"), identity.email))
-      .take(1);
-
-    if (users.length === 0) {
+    // The identity email is available directly
+    const email = identity.email;
+    if (!email) {
       return null;
     }
 
-    const user = users[0];
-
-    // Check if there's a pending user record
+    // Check if there's a pending user record by email
     const pendingUser = await ctx.db
       .query("pendingUsers")
-      .withIndex("by_userId", (q) => q.eq("userId", user._id))
+      .withIndex("by_email", (q) => q.eq("email", email))
       .unique();
 
     if (!pendingUser) {
