@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { internalMutation, internalQuery, query } from "./_generated/server";
+import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 
 // Query to check if a user is approved for admin access
 export const getUserApprovalStatus = query({
@@ -46,12 +46,16 @@ export const getUserApprovalStatus = query({
 });
 
 // Internal mutation to create a pending user record
+// Auto-approves the first user if no approved users exist
 export const createPendingUser = internalMutation({
   args: {
     userId: v.id("users"),
     email: v.string(),
   },
-  returns: v.id("pendingUsers"),
+  returns: v.object({
+    pendingUserId: v.id("pendingUsers"),
+    isFirstUser: v.boolean(),
+  }),
   handler: async (ctx, args) => {
     // Check if this user already has a pending record
     const existing = await ctx.db
@@ -60,8 +64,16 @@ export const createPendingUser = internalMutation({
       .unique();
 
     if (existing) {
-      return existing._id;
+      return { pendingUserId: existing._id, isFirstUser: false };
     }
+
+    // Check if there are any existing approved users
+    const approvedUsers = await ctx.db
+      .query("pendingUsers")
+      .withIndex("by_status", (q) => q.eq("status", "approved"))
+      .take(1);
+
+    const isFirstUser = approvedUsers.length === 0;
 
     // Generate a secure approval token
     const approvalToken = crypto.randomUUID();
@@ -69,12 +81,14 @@ export const createPendingUser = internalMutation({
     const pendingUserId = await ctx.db.insert("pendingUsers", {
       userId: args.userId,
       email: args.email,
-      status: "pending",
+      // Auto-approve if this is the first user, otherwise pending
+      status: isFirstUser ? "approved" : "pending",
       requestedAt: Date.now(),
+      reviewedAt: isFirstUser ? Date.now() : undefined,
       approvalToken,
     });
 
-    return pendingUserId;
+    return { pendingUserId, isFirstUser };
   },
 });
 
@@ -145,5 +159,171 @@ export const getPendingUserByEmail = internalQuery({
       .unique();
 
     return pendingUser;
+  },
+});
+
+// ============================================
+// PUBLIC QUERIES AND MUTATIONS FOR ADMIN PANEL
+// ============================================
+
+// Query to list all pending users (for admin approval)
+export const listPendingUsers = query({
+  args: {},
+  returns: v.array(
+    v.object({
+      _id: v.id("pendingUsers"),
+      email: v.string(),
+      status: v.union(v.literal("pending"), v.literal("approved"), v.literal("declined")),
+      requestedAt: v.number(),
+      reviewedAt: v.optional(v.number()),
+    })
+  ),
+  handler: async (ctx) => {
+    // Check if the current user is approved
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity?.email) {
+      return [];
+    }
+
+    const userEmail = identity.email;
+
+    const currentUser = await ctx.db
+      .query("pendingUsers")
+      .withIndex("by_email", (q) => q.eq("email", userEmail))
+      .unique();
+
+    // Only approved users can see the list
+    if (!currentUser || currentUser.status !== "approved") {
+      return [];
+    }
+
+    // Get all pending users
+    const pendingUsers = await ctx.db
+      .query("pendingUsers")
+      .withIndex("by_status", (q) => q.eq("status", "pending"))
+      .collect();
+
+    return pendingUsers.map((user) => ({
+      _id: user._id,
+      email: user.email,
+      status: user.status,
+      requestedAt: user.requestedAt,
+      reviewedAt: user.reviewedAt,
+    }));
+  },
+});
+
+// Query to list all users (for admin to see all users)
+export const listAllUsers = query({
+  args: {},
+  returns: v.array(
+    v.object({
+      _id: v.id("pendingUsers"),
+      email: v.string(),
+      status: v.union(v.literal("pending"), v.literal("approved"), v.literal("declined")),
+      requestedAt: v.number(),
+      reviewedAt: v.optional(v.number()),
+    })
+  ),
+  handler: async (ctx) => {
+    // Check if the current user is approved
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity?.email) {
+      return [];
+    }
+
+    const userEmail = identity.email;
+
+    const currentUser = await ctx.db
+      .query("pendingUsers")
+      .withIndex("by_email", (q) => q.eq("email", userEmail))
+      .unique();
+
+    // Only approved users can see the list
+    if (!currentUser || currentUser.status !== "approved") {
+      return [];
+    }
+
+    // Get all users
+    const allUsers = await ctx.db
+      .query("pendingUsers")
+      .order("desc")
+      .collect();
+
+    return allUsers.map((user) => ({
+      _id: user._id,
+      email: user.email,
+      status: user.status,
+      requestedAt: user.requestedAt,
+      reviewedAt: user.reviewedAt,
+    }));
+  },
+});
+
+// Mutation to approve a user (called by admins from the admin panel)
+export const approveUserFromAdmin = mutation({
+  args: {
+    pendingUserId: v.id("pendingUsers"),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    // Check if the current user is approved
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity?.email) {
+      throw new Error("Not authenticated");
+    }
+
+    const userEmail = identity.email;
+
+    const currentUser = await ctx.db
+      .query("pendingUsers")
+      .withIndex("by_email", (q) => q.eq("email", userEmail))
+      .unique();
+
+    if (!currentUser || currentUser.status !== "approved") {
+      throw new Error("Not authorized to approve users");
+    }
+
+    // Update the user's status
+    await ctx.db.patch(args.pendingUserId, {
+      status: "approved",
+      reviewedAt: Date.now(),
+    });
+
+    return null;
+  },
+});
+
+// Mutation to decline a user (called by admins from the admin panel)
+export const declineUserFromAdmin = mutation({
+  args: {
+    pendingUserId: v.id("pendingUsers"),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    // Check if the current user is approved
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity?.email) {
+      throw new Error("Not authenticated");
+    }
+
+    const userEmail = identity.email;
+
+    const currentUser = await ctx.db
+      .query("pendingUsers")
+      .withIndex("by_email", (q) => q.eq("email", userEmail))
+      .unique();
+
+    if (!currentUser || currentUser.status !== "approved") {
+      throw new Error("Not authorized to decline users");
+    }
+
+    // Update the user's status
+    await ctx.db.patch(args.pendingUserId, {
+      status: "declined",
+      reviewedAt: Date.now(),
+    });
+
+    return null;
   },
 });

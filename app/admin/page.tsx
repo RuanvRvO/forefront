@@ -7,9 +7,10 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { Id } from "@/convex/_generated/dataModel";
-import { Calendar, Clock, MapPin, Video, Plus, Pencil, Trash2, X } from "lucide-react";
+import { Calendar, Clock, MapPin, Video, Plus, Pencil, Trash2, X, Users, Check, XCircle } from "lucide-react";
 
 type MeetingType = "Online" | "In-Person";
+type TabType = "meetings" | "users";
 
 interface MeetingFormData {
   title: string;
@@ -83,7 +84,7 @@ function MeetingModal({
               required
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all"
               placeholder="Meeting title"
             />
           </div>
@@ -97,7 +98,7 @@ function MeetingModal({
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows={3}
-              className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
+              className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all resize-none"
               placeholder="Meeting description"
             />
           </div>
@@ -112,7 +113,7 @@ function MeetingModal({
                 required
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all"
               />
             </div>
             <div>
@@ -124,7 +125,7 @@ function MeetingModal({
                 required
                 value={formData.time}
                 onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all"
               />
             </div>
           </div>
@@ -138,7 +139,7 @@ function MeetingModal({
               required
               value={formData.location}
               onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all"
               placeholder="Meeting location or link"
             />
           </div>
@@ -155,7 +156,7 @@ function MeetingModal({
                   value="In-Person"
                   checked={formData.type === "In-Person"}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value as MeetingType })}
-                  className="w-4 h-4 text-blue-600"
+                  className="w-4 h-4 text-amber-600"
                 />
                 <span className="text-slate-700 dark:text-slate-300">In-Person</span>
               </label>
@@ -166,7 +167,7 @@ function MeetingModal({
                   value="Online"
                   checked={formData.type === "Online"}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value as MeetingType })}
-                  className="w-4 h-4 text-blue-600"
+                  className="w-4 h-4 text-amber-600"
                 />
                 <span className="text-slate-700 dark:text-slate-300">Online</span>
               </label>
@@ -184,7 +185,7 @@ function MeetingModal({
             <button
               type="submit"
               disabled={isSaving}
-              className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSaving ? "Saving..." : isEditing ? "Save Changes" : "Add Meeting"}
             </button>
@@ -356,7 +357,7 @@ function MeetingsManager() {
         </div>
         <button
           onClick={handleAdd}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-colors"
         >
           <Plus className="w-4 h-4" />
           Add Meeting
@@ -374,7 +375,7 @@ function MeetingsManager() {
           </p>
           <button
             onClick={handleAdd}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-colors"
           >
             <Plus className="w-4 h-4" />
             Add Meeting
@@ -428,7 +429,7 @@ function MeetingsManager() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleEdit(meeting)}
-                    className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                    className="p-2 text-slate-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors"
                     title="Edit meeting"
                   >
                     <Pencil className="w-4 h-4" />
@@ -474,10 +475,174 @@ function MeetingsManager() {
   );
 }
 
+function UserManagement() {
+  const pendingUsers = useQuery(api.userApproval.listPendingUsers) ?? [];
+  const allUsers = useQuery(api.userApproval.listAllUsers) ?? [];
+  const approveUser = useMutation(api.userApproval.approveUserFromAdmin);
+  const declineUser = useMutation(api.userApproval.declineUserFromAdmin);
+
+  const [processingId, setProcessingId] = useState<Id<"pendingUsers"> | null>(null);
+
+  const handleApprove = async (userId: Id<"pendingUsers">) => {
+    setProcessingId(userId);
+    try {
+      await approveUser({ pendingUserId: userId });
+    } catch (error) {
+      console.error("Error approving user:", error);
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleDecline = async (userId: Id<"pendingUsers">) => {
+    setProcessingId(userId);
+    try {
+      await declineUser({ pendingUserId: userId });
+    } catch (error) {
+      console.error("Error declining user:", error);
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const formatDate = (timestamp: number) => {
+    return new Date(timestamp).toLocaleDateString("en-ZA", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const approvedUsers = allUsers.filter((u) => u.status === "approved");
+  const declinedUsers = allUsers.filter((u) => u.status === "declined");
+
+  return (
+    <div className="space-y-6">
+      {/* Pending Users */}
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+        <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center">
+              <Users className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">Pending Requests</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                {pendingUsers.length} user{pendingUsers.length !== 1 ? "s" : ""} waiting for approval
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {pendingUsers.length === 0 ? (
+          <div className="p-8 text-center">
+            <p className="text-slate-500 dark:text-slate-400">No pending requests</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-200 dark:divide-slate-700">
+            {pendingUsers.map((user) => (
+              <div key={user._id} className="p-4 flex items-center justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-slate-800 dark:text-slate-200 truncate">{user.email}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Requested: {formatDate(user.requestedAt)}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleApprove(user._id)}
+                    disabled={processingId === user._id}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    <Check className="w-4 h-4" />
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => handleDecline(user._id)}
+                    disabled={processingId === user._id}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    <XCircle className="w-4 h-4" />
+                    Decline
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Approved Users */}
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+        <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">Approved Users</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            {approvedUsers.length} user{approvedUsers.length !== 1 ? "s" : ""} with access
+          </p>
+        </div>
+
+        {approvedUsers.length === 0 ? (
+          <div className="p-8 text-center">
+            <p className="text-slate-500 dark:text-slate-400">No approved users</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-200 dark:divide-slate-700">
+            {approvedUsers.map((user) => (
+              <div key={user._id} className="p-4 flex items-center justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-slate-800 dark:text-slate-200 truncate">{user.email}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Approved: {user.reviewedAt ? formatDate(user.reviewedAt) : "Auto-approved (first user)"}
+                  </p>
+                </div>
+                <span className="px-2.5 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-medium rounded-full">
+                  Approved
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Declined Users */}
+      {declinedUsers.length > 0 && (
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+          <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">Declined Users</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              {declinedUsers.length} user{declinedUsers.length !== 1 ? "s" : ""} declined
+            </p>
+          </div>
+
+          <div className="divide-y divide-slate-200 dark:divide-slate-700">
+            {declinedUsers.map((user) => (
+              <div key={user._id} className="p-4 flex items-center justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-slate-800 dark:text-slate-200 truncate">{user.email}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Declined: {user.reviewedAt ? formatDate(user.reviewedAt) : "N/A"}
+                  </p>
+                </div>
+                <span className="px-2.5 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-xs font-medium rounded-full">
+                  Declined
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AdminContent() {
   const router = useRouter();
   const approvalStatus = useQuery(api.userApproval.getUserApprovalStatus);
+  const pendingUsers = useQuery(api.userApproval.listPendingUsers) ?? [];
   const { signOut } = useAuthActions();
+  const [activeTab, setActiveTab] = useState<TabType>("meetings");
 
   useEffect(() => {
     // If not approved, redirect to signin
@@ -514,13 +679,11 @@ function AdminContent() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-slate-700 dark:bg-slate-600 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                </svg>
+              <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">F</span>
               </div>
               <h1 className="text-xl font-bold text-slate-800 dark:text-slate-200">
-                Admin Panel
+                Forefront Admin
               </h1>
             </div>
             <div className="flex items-center gap-4">
@@ -538,19 +701,74 @@ function AdminContent() {
         </div>
       </header>
 
+      {/* Tabs */}
+      <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <nav className="flex gap-8">
+            <button
+              onClick={() => setActiveTab("meetings")}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === "meetings"
+                  ? "border-amber-500 text-amber-600 dark:text-amber-400"
+                  : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                Meetings
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveTab("users")}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === "users"
+                  ? "border-amber-500 text-amber-600 dark:text-amber-400"
+                  : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                User Management
+                {pendingUsers.length > 0 && (
+                  <span className="ml-1 px-2 py-0.5 bg-amber-500 text-white text-xs font-medium rounded-full">
+                    {pendingUsers.length}
+                  </span>
+                )}
+              </span>
+            </button>
+          </nav>
+        </div>
+      </div>
+
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-2">
-            Meetings Management
-          </h2>
-          <p className="text-slate-600 dark:text-slate-400">
-            Add, edit, or remove meetings that appear on the landing page.
-          </p>
-        </div>
+        {activeTab === "meetings" && (
+          <>
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-2">
+                Meetings Management
+              </h2>
+              <p className="text-slate-600 dark:text-slate-400">
+                Add, edit, or remove meetings that appear on the landing page.
+              </p>
+            </div>
+            <MeetingsManager />
+          </>
+        )}
 
-        {/* Meetings Manager */}
-        <MeetingsManager />
+        {activeTab === "users" && (
+          <>
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-2">
+                User Management
+              </h2>
+              <p className="text-slate-600 dark:text-slate-400">
+                Approve or decline user access requests.
+              </p>
+            </div>
+            <UserManagement />
+          </>
+        )}
       </main>
     </div>
   );

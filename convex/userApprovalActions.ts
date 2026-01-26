@@ -63,18 +63,26 @@ export const handleNewUserSignUp = internalAction({
   returns: v.null(),
   handler: async (ctx, args) => {
     // Create the pending user record
-    await ctx.runMutation(internal.userApproval.createPendingUser, {
+    // This returns info about whether the user was auto-approved (first user)
+    type CreateResult = { pendingUserId: string; isFirstUser: boolean };
+    const result: CreateResult = await ctx.runMutation(internal.userApproval.createPendingUser, {
       userId: args.userId,
       email: args.email,
     });
 
-    // Get the approval token
+    // If this is the first user, they're auto-approved - no email needed
+    if (result.isFirstUser) {
+      console.log(`First user ${args.email} auto-approved`);
+      return null;
+    }
+
+    // Get the approval token for the email
     const pendingUser = await ctx.runQuery(internal.userApproval.getPendingUserByEmail, {
       email: args.email,
     });
 
-    if (pendingUser) {
-      // Send the approval email
+    if (pendingUser && pendingUser.status === "pending") {
+      // Send the approval email to admin
       await ctx.runAction(internal.userApprovalActions.sendApprovalEmail, {
         email: args.email,
         approvalToken: pendingUser.approvalToken,
