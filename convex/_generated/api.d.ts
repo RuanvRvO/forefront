@@ -16,6 +16,8 @@ import type * as http from "../http.js";
 import type * as meetings from "../meetings.js";
 import type * as myFunctions from "../myFunctions.js";
 import type * as seedMeetings from "../seedMeetings.js";
+import type * as userApproval from "../userApproval.js";
+import type * as userApprovalActions from "../userApprovalActions.js";
 
 import type {
   ApiFromModules,
@@ -32,6 +34,8 @@ declare const fullApi: ApiFromModules<{
   meetings: typeof meetings;
   myFunctions: typeof myFunctions;
   seedMeetings: typeof seedMeetings;
+  userApproval: typeof userApproval;
+  userApprovalActions: typeof userApprovalActions;
 }>;
 
 /**

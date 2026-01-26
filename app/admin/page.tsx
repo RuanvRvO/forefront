@@ -2,10 +2,477 @@
 
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { useQuery } from "convex/react";
+import { useEffect, useState } from "react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Authenticated, Unauthenticated } from "convex/react";
+import { Id } from "@/convex/_generated/dataModel";
+import { Calendar, Clock, MapPin, Video, Plus, Pencil, Trash2, X } from "lucide-react";
+
+type MeetingType = "Online" | "In-Person";
+
+interface MeetingFormData {
+  title: string;
+  description: string;
+  date: string;
+  time: string;
+  location: string;
+  type: MeetingType;
+}
+
+const emptyFormData: MeetingFormData = {
+  title: "",
+  description: "",
+  date: "",
+  time: "",
+  location: "",
+  type: "In-Person",
+};
+
+function MeetingModal({
+  isOpen,
+  onClose,
+  onSave,
+  initialData,
+  isEditing,
+  isSaving,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (data: MeetingFormData) => void;
+  initialData: MeetingFormData;
+  isEditing: boolean;
+  isSaving: boolean;
+}) {
+  const [formData, setFormData] = useState<MeetingFormData>(initialData);
+
+  useEffect(() => {
+    setFormData(initialData);
+  }, [initialData]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+            {isEditing ? "Edit Meeting" : "Add New Meeting"}
+          </h3>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5 text-slate-500" />
+          </button>
+        </div>
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            onSave(formData);
+          }}
+          className="p-6 space-y-4"
+        >
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Title
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              placeholder="Meeting title"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Description
+            </label>
+            <textarea
+              required
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              rows={3}
+              className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
+              placeholder="Meeting description"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Date
+              </label>
+              <input
+                type="date"
+                required
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Time
+              </label>
+              <input
+                type="time"
+                required
+                value={formData.time}
+                onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Location
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.location}
+              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              placeholder="Meeting location or link"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Type
+            </label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="type"
+                  value="In-Person"
+                  checked={formData.type === "In-Person"}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value as MeetingType })}
+                  className="w-4 h-4 text-blue-600"
+                />
+                <span className="text-slate-700 dark:text-slate-300">In-Person</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="type"
+                  value="Online"
+                  checked={formData.type === "Online"}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value as MeetingType })}
+                  className="w-4 h-4 text-blue-600"
+                />
+                <span className="text-slate-700 dark:text-slate-300">Online</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSaving ? "Saving..." : isEditing ? "Save Changes" : "Add Meeting"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function DeleteConfirmModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  meetingTitle,
+  isDeleting,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  meetingTitle: string;
+  isDeleting: boolean;
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl max-w-md w-full">
+        <div className="p-6">
+          <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
+          </div>
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 text-center mb-2">
+            Delete Meeting
+          </h3>
+          <p className="text-slate-600 dark:text-slate-400 text-center mb-6">
+            Are you sure you want to delete &quot;{meetingTitle}&quot;? This action cannot be undone.
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              className="flex-1 px-4 py-2 text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onConfirm}
+              disabled={isDeleting}
+              className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MeetingsManager() {
+  const meetings = useQuery(api.meetings.listMeetings) ?? [];
+  const addMeeting = useMutation(api.meetings.addMeeting);
+  const updateMeeting = useMutation(api.meetings.updateMeeting);
+  const deleteMeeting = useMutation(api.meetings.deleteMeeting);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [editingMeeting, setEditingMeeting] = useState<Id<"meetings"> | null>(null);
+  const [deletingMeeting, setDeletingMeeting] = useState<{ id: Id<"meetings">; title: string } | null>(null);
+  const [formData, setFormData] = useState<MeetingFormData>(emptyFormData);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleAdd = () => {
+    setEditingMeeting(null);
+    setFormData(emptyFormData);
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (meeting: typeof meetings[0]) => {
+    setEditingMeeting(meeting._id);
+    setFormData({
+      title: meeting.title,
+      description: meeting.description,
+      date: meeting.date,
+      time: meeting.time,
+      location: meeting.location,
+      type: meeting.type,
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (meeting: typeof meetings[0]) => {
+    setDeletingMeeting({ id: meeting._id, title: meeting.title });
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleSave = async (data: MeetingFormData) => {
+    setIsSaving(true);
+    try {
+      if (editingMeeting) {
+        await updateMeeting({
+          id: editingMeeting,
+          ...data,
+        });
+      } else {
+        await addMeeting(data);
+      }
+      setIsModalOpen(false);
+      setEditingMeeting(null);
+      setFormData(emptyFormData);
+    } catch (error) {
+      console.error("Error saving meeting:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingMeeting) return;
+    setIsDeleting(true);
+    try {
+      await deleteMeeting({ id: deletingMeeting.id });
+      setIsDeleteModalOpen(false);
+      setDeletingMeeting(null);
+    } catch (error) {
+      console.error("Error deleting meeting:", error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const formatDate = (dateStr: string) => {
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString("en-ZA", {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const formatTime = (timeStr: string) => {
+    try {
+      const [hours, minutes] = timeStr.split(":");
+      const date = new Date();
+      date.setHours(parseInt(hours), parseInt(minutes));
+      return date.toLocaleTimeString("en-ZA", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return timeStr;
+    }
+  };
+
+  return (
+    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+      <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+        <div>
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">Meetings</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            {meetings.length} meeting{meetings.length !== 1 ? "s" : ""} scheduled
+          </p>
+        </div>
+        <button
+          onClick={handleAdd}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          Add Meeting
+        </button>
+      </div>
+
+      {meetings.length === 0 ? (
+        <div className="p-12 text-center">
+          <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Calendar className="w-8 h-8 text-slate-400" />
+          </div>
+          <h4 className="text-slate-800 dark:text-slate-200 font-medium mb-2">No meetings yet</h4>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">
+            Get started by adding your first meeting.
+          </p>
+          <button
+            onClick={handleAdd}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Add Meeting
+          </button>
+        </div>
+      ) : (
+        <div className="divide-y divide-slate-200 dark:divide-slate-700">
+          {meetings.map((meeting) => (
+            <div
+              key={meeting._id}
+              className="p-6 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h4 className="text-base font-semibold text-slate-800 dark:text-slate-200 truncate">
+                      {meeting.title}
+                    </h4>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${
+                        meeting.type === "Online"
+                          ? "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300"
+                          : "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
+                      }`}
+                    >
+                      {meeting.type}
+                    </span>
+                  </div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 line-clamp-2">
+                    {meeting.description}
+                  </p>
+                  <div className="flex flex-wrap gap-4 text-sm text-slate-500 dark:text-slate-400">
+                    <span className="flex items-center gap-1.5">
+                      <Calendar className="w-4 h-4" />
+                      {formatDate(meeting.date)}
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <Clock className="w-4 h-4" />
+                      {formatTime(meeting.time)}
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      {meeting.type === "Online" ? (
+                        <Video className="w-4 h-4" />
+                      ) : (
+                        <MapPin className="w-4 h-4" />
+                      )}
+                      {meeting.location}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleEdit(meeting)}
+                    className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                    title="Edit meeting"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(meeting)}
+                    className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                    title="Delete meeting"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <MeetingModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingMeeting(null);
+          setFormData(emptyFormData);
+        }}
+        onSave={handleSave}
+        initialData={formData}
+        isEditing={!!editingMeeting}
+        isSaving={isSaving}
+      />
+
+      <DeleteConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setDeletingMeeting(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        meetingTitle={deletingMeeting?.title ?? ""}
+        isDeleting={isDeleting}
+      />
+    </div>
+  );
+}
 
 function AdminContent() {
   const router = useRouter();
@@ -75,76 +542,15 @@ function AdminContent() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-2">
-            Welcome to Forefront Ministries Admin
+            Meetings Management
           </h2>
           <p className="text-slate-600 dark:text-slate-400">
-            Manage your ministry operations from this dashboard.
+            Add, edit, or remove meetings that appear on the landing page.
           </p>
         </div>
 
-        {/* Dashboard Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Card 1 */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">Meetings</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Manage scheduled meetings</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 2 */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">Subscribers</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">View email subscribers</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 3 */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">Settings</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Configure platform settings</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Approval Status Badge */}
-        <div className="mt-8 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-green-800 dark:text-green-200 font-medium">Verified Admin Access</p>
-              <p className="text-green-600 dark:text-green-400 text-sm">Your account has been approved for admin access.</p>
-            </div>
-          </div>
-        </div>
+        {/* Meetings Manager */}
+        <MeetingsManager />
       </main>
     </div>
   );

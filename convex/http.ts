@@ -23,7 +23,7 @@ http.route({
       });
     }
 
-    const result = await ctx.runAction(internal.userApproval.processApproval, {
+    const result = await ctx.runAction(internal.userApprovalActions.processApproval, {
       token,
       action: action as "approve" | "decline",
     });

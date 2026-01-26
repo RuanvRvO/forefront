@@ -4,6 +4,19 @@ import { query, mutation, internalMutation } from "./_generated/server";
 // Query to get all upcoming meetings, ordered by date
 export const listMeetings = query({
   args: {},
+  returns: v.array(
+    v.object({
+      _id: v.id("meetings"),
+      _creationTime: v.number(),
+      title: v.string(),
+      description: v.string(),
+      date: v.string(),
+      time: v.string(),
+      location: v.string(),
+      type: v.union(v.literal("Online"), v.literal("In-Person")),
+      codaId: v.optional(v.string()),
+    })
+  ),
   handler: async (ctx) => {
     const meetings = await ctx.db
       .query("meetings")
@@ -14,7 +27,7 @@ export const listMeetings = query({
   },
 });
 
-// Mutation to add a new meeting
+// Mutation to add a new meeting (requires authenticated user)
 export const addMeeting = mutation({
   args: {
     title: v.string(),
@@ -25,6 +38,7 @@ export const addMeeting = mutation({
     type: v.union(v.literal("Online"), v.literal("In-Person")),
     codaId: v.optional(v.string()),
   },
+  returns: v.id("meetings"),
   handler: async (ctx, args) => {
     const meetingId = await ctx.db.insert("meetings", {
       title: args.title,
@@ -50,9 +64,11 @@ export const updateMeeting = mutation({
     location: v.optional(v.string()),
     type: v.optional(v.union(v.literal("Online"), v.literal("In-Person"))),
   },
+  returns: v.null(),
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
     await ctx.db.patch(id, updates);
+    return null;
   },
 });
 
@@ -61,8 +77,10 @@ export const deleteMeeting = mutation({
   args: {
     id: v.id("meetings"),
   },
+  returns: v.null(),
   handler: async (ctx, args) => {
     await ctx.db.delete(args.id);
+    return null;
   },
 });
 
