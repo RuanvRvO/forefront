@@ -24,4 +24,17 @@ export default defineSchema({
     subscribedAt: v.number(), // Timestamp
     source: v.optional(v.string()), // Where they subscribed from (e.g., "landing_page")
   }).index("by_email", ["email"]),
+  // Admin access approval system
+  pendingUsers: defineTable({
+    userId: v.id("users"), // Reference to the auth user
+    email: v.string(),
+    status: v.union(v.literal("pending"), v.literal("approved"), v.literal("declined")),
+    requestedAt: v.number(), // Timestamp
+    reviewedAt: v.optional(v.number()), // Timestamp when approved/declined
+    approvalToken: v.string(), // Secure token for approve/decline links
+  })
+    .index("by_userId", ["userId"])
+    .index("by_email", ["email"])
+    .index("by_approvalToken", ["approvalToken"])
+    .index("by_status", ["status"]),
 });
