@@ -13,51 +13,6 @@ function SignInForm() {
   const [flow, setFlow] = useState<"signIn" | "signUp">("signIn");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [justSignedUp, setJustSignedUp] = useState(false);
-  const router = useRouter();
-
-  // Check approval status after sign in
-  const approvalStatus = useQuery(api.userApproval.getUserApprovalStatus);
-
-  // Handle redirect for approved users
-  useEffect(() => {
-    if (approvalStatus?.status === "approved") {
-      router.push("/admin");
-    }
-  }, [approvalStatus, router]);
-
-  // Derive display state from approval status and local state
-  const showPending = justSignedUp || approvalStatus?.status === "pending";
-  const isDeclined = approvalStatus?.status === "declined";
-  const declinedError = isDeclined ? "Your access request has been declined. Please contact the administrator." : null;
-
-  if (showPending) {
-    return (
-      <div className="flex flex-col gap-6 w-full bg-amber-50 dark:bg-amber-900/20 p-8 rounded-2xl shadow-xl border border-amber-300 dark:border-amber-600">
-        <div className="flex items-center justify-center">
-          <div className="w-16 h-16 bg-amber-500 rounded-full flex items-center justify-center">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-        </div>
-        <div className="text-center">
-          <h2 className="text-xl font-bold text-amber-800 dark:text-amber-200 mb-2">
-            Account Pending Approval
-          </h2>
-          <p className="text-amber-700 dark:text-amber-300 text-sm">
-            Your account has been created successfully. An administrator has been notified and will review your access request.
-          </p>
-          <p className="text-amber-600 dark:text-amber-400 text-sm mt-4">
-            You will be able to access the admin panel once your account is approved.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Combine errors - prefer API error, then declined error, then local error
-  const displayError = error || declinedError;
 
   return (
     <form
@@ -70,11 +25,8 @@ function SignInForm() {
         formData.set("flow", flow);
         void signIn("password", formData)
           .then(() => {
-            if (flow === "signUp") {
-              // For sign up, show pending message
-              setJustSignedUp(true);
-            }
-            // For sign in, the useEffect will handle redirect based on approval status
+            // After successful sign in/up, the Authenticated component will take over
+            setLoading(false);
           })
           .catch((err) => {
             setError(err.message);
@@ -124,10 +76,10 @@ function SignInForm() {
           {flow === "signIn" ? "Sign up" : "Sign in"}
         </span>
       </div>
-      {displayError && (
+      {error && (
         <div className="bg-rose-500/10 border border-rose-500/30 dark:border-rose-500/50 rounded-lg p-4">
           <p className="text-rose-700 dark:text-rose-300 font-medium text-sm break-words">
-            Error: {displayError}
+            Error: {error}
           </p>
         </div>
       )}
@@ -141,13 +93,12 @@ function AuthenticatedContent() {
   const { signOut } = useAuthActions();
 
   useEffect(() => {
-    if (approvalStatus) {
-      if (approvalStatus.status === "approved") {
-        router.push("/admin");
-      }
+    if (approvalStatus?.status === "approved") {
+      router.push("/admin");
     }
   }, [approvalStatus, router]);
 
+  // Loading state
   if (approvalStatus === undefined) {
     return (
       <div className="flex flex-col gap-4 w-full bg-slate-100 dark:bg-slate-800 p-8 rounded-2xl shadow-xl border border-slate-300 dark:border-slate-600">
@@ -156,7 +107,8 @@ function AuthenticatedContent() {
     );
   }
 
-  if (approvalStatus && approvalStatus.status === "pending") {
+  // Pending approval
+  if (approvalStatus?.status === "pending") {
     return (
       <div className="flex flex-col gap-6 w-full bg-amber-50 dark:bg-amber-900/20 p-8 rounded-2xl shadow-xl border border-amber-300 dark:border-amber-600">
         <div className="flex items-center justify-center">
@@ -179,7 +131,7 @@ function AuthenticatedContent() {
         </div>
         <button
           onClick={() => signOut()}
-          className="mt-4 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 text-sm underline"
+          className="mt-4 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 text-sm underline cursor-pointer"
         >
           Sign out
         </button>
@@ -187,7 +139,8 @@ function AuthenticatedContent() {
     );
   }
 
-  if (approvalStatus && approvalStatus.status === "declined") {
+  // Declined
+  if (approvalStatus?.status === "declined") {
     return (
       <div className="flex flex-col gap-6 w-full bg-rose-50 dark:bg-rose-900/20 p-8 rounded-2xl shadow-xl border border-rose-300 dark:border-rose-600">
         <div className="flex items-center justify-center">
@@ -210,7 +163,7 @@ function AuthenticatedContent() {
         </div>
         <button
           onClick={() => signOut()}
-          className="mt-4 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 text-sm underline"
+          className="mt-4 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 text-sm underline cursor-pointer"
         >
           Sign out
         </button>
@@ -218,10 +171,34 @@ function AuthenticatedContent() {
     );
   }
 
-  // No approval record yet - show loading or redirect
+  // No approval record yet (new sign up - waiting for record to be created)
+  // This happens briefly after sign up before the pending user record is created
   return (
-    <div className="flex flex-col gap-4 w-full bg-slate-100 dark:bg-slate-800 p-8 rounded-2xl shadow-xl border border-slate-300 dark:border-slate-600">
-      <p className="text-center text-slate-600 dark:text-slate-400">Processing your account...</p>
+    <div className="flex flex-col gap-6 w-full bg-amber-50 dark:bg-amber-900/20 p-8 rounded-2xl shadow-xl border border-amber-300 dark:border-amber-600">
+      <div className="flex items-center justify-center">
+        <div className="w-16 h-16 bg-amber-500 rounded-full flex items-center justify-center">
+          <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      </div>
+      <div className="text-center">
+        <h2 className="text-xl font-bold text-amber-800 dark:text-amber-200 mb-2">
+          Account Created
+        </h2>
+        <p className="text-amber-700 dark:text-amber-300 text-sm">
+          Your account has been created. An administrator has been notified and will review your access request.
+        </p>
+        <p className="text-amber-600 dark:text-amber-400 text-sm mt-4">
+          You will be able to access the admin panel once your account is approved.
+        </p>
+      </div>
+      <button
+        onClick={() => signOut()}
+        className="mt-4 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 text-sm underline cursor-pointer"
+      >
+        Sign out
+      </button>
     </div>
   );
 }

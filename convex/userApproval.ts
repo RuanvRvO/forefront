@@ -12,31 +12,36 @@ export const getUserApprovalStatus = query({
     v.null()
   ),
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    try {
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return null;
+      }
+
+      // The identity email is available directly
+      const email = identity.email;
+      if (!email) {
+        return null;
+      }
+
+      // Check if there's a pending user record by email
+      const pendingUser = await ctx.db
+        .query("pendingUsers")
+        .withIndex("by_email", (q) => q.eq("email", email))
+        .unique();
+
+      if (!pendingUser) {
+        return null;
+      }
+
+      return {
+        status: pendingUser.status,
+        email: pendingUser.email,
+      };
+    } catch (error) {
+      console.error("Error in getUserApprovalStatus:", error);
       return null;
     }
-
-    // The identity email is available directly
-    const email = identity.email;
-    if (!email) {
-      return null;
-    }
-
-    // Check if there's a pending user record by email
-    const pendingUser = await ctx.db
-      .query("pendingUsers")
-      .withIndex("by_email", (q) => q.eq("email", email))
-      .unique();
-
-    if (!pendingUser) {
-      return null;
-    }
-
-    return {
-      status: pendingUser.status,
-      email: pendingUser.email,
-    };
   },
 });
 
