@@ -101,10 +101,11 @@ function AuthenticatedContent() {
   const { signOut } = useAuthActions();
   const [isCreatingRecord, setIsCreatingRecord] = useState(false);
   const [recordCreated, setRecordCreated] = useState(false);
+  const [creationError, setCreationError] = useState(false);
 
   // If no approval record exists, create one
   useEffect(() => {
-    if (approvalStatus === null && !isCreatingRecord && !recordCreated) {
+    if (approvalStatus === null && !isCreatingRecord && !recordCreated && !creationError) {
       setIsCreatingRecord(true);
       ensurePendingUserRecord()
         .then((result) => {
@@ -115,9 +116,10 @@ function AuthenticatedContent() {
         .catch((err) => {
           console.error("[SignIn] Error ensuring pending user record:", err);
           setIsCreatingRecord(false);
+          setCreationError(true); // Prevent infinite retries
         });
     }
-  }, [approvalStatus, isCreatingRecord, recordCreated, ensurePendingUserRecord]);
+  }, [approvalStatus, isCreatingRecord, recordCreated, creationError, ensurePendingUserRecord]);
 
   useEffect(() => {
     if (approvalStatus?.status === "approved") {
@@ -201,6 +203,45 @@ function AuthenticatedContent() {
     );
   }
 
+  // Error state - show error and allow retry
+  if (creationError) {
+    return (
+      <div className="flex flex-col gap-6 w-full bg-white/95 backdrop-blur-sm p-8 rounded-xl shadow-2xl">
+        <div className="flex items-center justify-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+        </div>
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">
+            Setup Error
+          </h2>
+          <p className="text-gray-600 text-sm">
+            There was an error setting up your account. Please try again.
+          </p>
+        </div>
+        <button
+          onClick={() => {
+            setCreationError(false);
+            setRecordCreated(false);
+            setIsCreatingRecord(false);
+          }}
+          className="mt-2 bg-amber-500 hover:bg-amber-600 text-white font-medium py-2 px-4 rounded-lg cursor-pointer transition-colors"
+        >
+          Retry
+        </button>
+        <button
+          onClick={() => signOut()}
+          className="text-amber-600 hover:text-amber-700 text-sm font-medium cursor-pointer transition-colors"
+        >
+          Sign out
+        </button>
+      </div>
+    );
+  }
+
   // No approval record yet - this should rarely show since we auto-create records
   // Show a retry option in case something went wrong
   return (
@@ -222,6 +263,7 @@ function AuthenticatedContent() {
       </div>
       <button
         onClick={() => {
+          setCreationError(false);
           setRecordCreated(false);
           setIsCreatingRecord(false);
         }}
