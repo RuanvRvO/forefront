@@ -107,27 +107,41 @@ function AuthenticatedContent() {
   const [mutationStatus, setMutationStatus] = useState<"pending" | "approved" | "declined" | null>(null);
 
   // If no approval record exists, create one
+  // Use retry logic to handle race conditions with auth session establishment
+  const [retryCount, setRetryCount] = useState(0);
+  const maxRetries = 3;
+
   useEffect(() => {
-    if (approvalStatus === null && !isCreatingRecord && !recordCreated && !creationError) {
-      setIsCreatingRecord(true);
-      ensurePendingUserRecord()
-        .then((result) => {
-          setRecordCreated(true);
-          setIsCreatingRecord(false);
-          // Use the mutation result directly to handle redirect
-          if (result?.status) {
-            setMutationStatus(result.status);
-            if (result.status === "approved") {
-              router.push("/admin");
+    if (approvalStatus === null && !isCreatingRecord && !recordCreated && !creationError && retryCount < maxRetries) {
+      // Add a small delay before first attempt to let auth session establish
+      const delay = retryCount === 0 ? 500 : 1000;
+
+      const timeoutId = setTimeout(() => {
+        setIsCreatingRecord(true);
+        ensurePendingUserRecord()
+          .then((result) => {
+            setIsCreatingRecord(false);
+            if (result?.status) {
+              // Success - record was created or found
+              setRecordCreated(true);
+              setMutationStatus(result.status);
+              if (result.status === "approved") {
+                router.push("/admin");
+              }
+            } else {
+              // Mutation returned null - might be auth race condition, retry
+              setRetryCount(prev => prev + 1);
             }
-          }
-        })
-        .catch(() => {
-          setIsCreatingRecord(false);
-          setCreationError(true); // Prevent infinite retries
-        });
+          })
+          .catch(() => {
+            setIsCreatingRecord(false);
+            setCreationError(true); // Stop retrying on error
+          });
+      }, delay);
+
+      return () => clearTimeout(timeoutId);
     }
-  }, [approvalStatus, isCreatingRecord, recordCreated, creationError, ensurePendingUserRecord, router]);
+  }, [approvalStatus, isCreatingRecord, recordCreated, creationError, retryCount, ensurePendingUserRecord, router]);
 
   useEffect(() => {
     if (approvalStatus?.status === "approved") {
@@ -140,7 +154,9 @@ function AuthenticatedContent() {
 
   // Loading state - show while query is loading or mutation is in progress
   // But don't show loading if we already have a status from the mutation
-  if (approvalStatus === undefined || isCreatingRecord || (approvalStatus === null && recordCreated && !mutationStatus)) {
+  // Also show loading while retrying (up to max retries)
+  const isRetrying = approvalStatus === null && !recordCreated && !creationError && retryCount < maxRetries;
+  if (approvalStatus === undefined || isCreatingRecord || isRetrying || (approvalStatus === null && recordCreated && !mutationStatus)) {
     return (
       <div className="flex flex-col gap-4 w-full bg-white/95 backdrop-blur-sm p-8 rounded-xl shadow-2xl">
         <div className="flex items-center justify-center py-4">
@@ -215,8 +231,8 @@ function AuthenticatedContent() {
     );
   }
 
-  // Error state - show error and allow retry
-  if (creationError) {
+  // Error state - show error and allow retry (also when max retries exceeded)
+  if (creationError || (retryCount >= maxRetries && !mutationStatus)) {
     return (
       <div className="flex flex-col gap-6 w-full bg-white/95 backdrop-blur-sm p-8 rounded-xl shadow-2xl">
         <div className="flex items-center justify-center">
@@ -239,6 +255,8 @@ function AuthenticatedContent() {
             setCreationError(false);
             setRecordCreated(false);
             setIsCreatingRecord(false);
+            setRetryCount(0);
+            setMutationStatus(null);
           }}
           className="mt-2 bg-amber-500 hover:bg-amber-600 text-white font-medium py-2 px-4 rounded-lg cursor-pointer transition-colors"
         >
@@ -254,8 +272,7 @@ function AuthenticatedContent() {
     );
   }
 
-  // No approval record yet - this should rarely show since we auto-create records
-  // Show a retry option in case something went wrong
+  // Fallback - should not reach here normally
   return (
     <div className="flex flex-col gap-6 w-full bg-white/95 backdrop-blur-sm p-8 rounded-xl shadow-2xl">
       <div className="flex items-center justify-center">
@@ -278,6 +295,8 @@ function AuthenticatedContent() {
           setCreationError(false);
           setRecordCreated(false);
           setIsCreatingRecord(false);
+          setRetryCount(0);
+          setMutationStatus(null);
         }}
         className="mt-2 bg-amber-500 hover:bg-amber-600 text-white font-medium py-2 px-4 rounded-lg cursor-pointer transition-colors"
       >
