@@ -104,22 +104,30 @@ function AuthenticatedContent() {
   const [isCreatingRecord, setIsCreatingRecord] = useState(false);
   const [recordCreated, setRecordCreated] = useState(false);
   const [creationError, setCreationError] = useState(false);
+  const [mutationStatus, setMutationStatus] = useState<"pending" | "approved" | "declined" | null>(null);
 
   // If no approval record exists, create one
   useEffect(() => {
     if (approvalStatus === null && !isCreatingRecord && !recordCreated && !creationError) {
       setIsCreatingRecord(true);
       ensurePendingUserRecord()
-        .then(() => {
+        .then((result) => {
           setRecordCreated(true);
           setIsCreatingRecord(false);
+          // Use the mutation result directly to handle redirect
+          if (result?.status) {
+            setMutationStatus(result.status);
+            if (result.status === "approved") {
+              router.push("/admin");
+            }
+          }
         })
         .catch(() => {
           setIsCreatingRecord(false);
           setCreationError(true); // Prevent infinite retries
         });
     }
-  }, [approvalStatus, isCreatingRecord, recordCreated, creationError, ensurePendingUserRecord]);
+  }, [approvalStatus, isCreatingRecord, recordCreated, creationError, ensurePendingUserRecord, router]);
 
   useEffect(() => {
     if (approvalStatus?.status === "approved") {
@@ -127,8 +135,12 @@ function AuthenticatedContent() {
     }
   }, [approvalStatus, router]);
 
-  // Loading state - also show loading if record was just created (waiting for query to update)
-  if (approvalStatus === undefined || isCreatingRecord || (approvalStatus === null && recordCreated)) {
+  // Derive the effective status from either the query or the mutation result
+  const effectiveStatus = approvalStatus?.status || mutationStatus;
+
+  // Loading state - show while query is loading or mutation is in progress
+  // But don't show loading if we already have a status from the mutation
+  if (approvalStatus === undefined || isCreatingRecord || (approvalStatus === null && recordCreated && !mutationStatus)) {
     return (
       <div className="flex flex-col gap-4 w-full bg-white/95 backdrop-blur-sm p-8 rounded-xl shadow-2xl">
         <div className="flex items-center justify-center py-4">
@@ -140,7 +152,7 @@ function AuthenticatedContent() {
   }
 
   // Pending approval
-  if (approvalStatus?.status === "pending") {
+  if (effectiveStatus === "pending") {
     return (
       <div className="flex flex-col gap-6 w-full bg-white/95 backdrop-blur-sm p-8 rounded-xl shadow-2xl">
         <div className="flex items-center justify-center">
@@ -172,7 +184,7 @@ function AuthenticatedContent() {
   }
 
   // Declined
-  if (approvalStatus?.status === "declined") {
+  if (effectiveStatus === "declined") {
     return (
       <div className="flex flex-col gap-6 w-full bg-white/95 backdrop-blur-sm p-8 rounded-xl shadow-2xl">
         <div className="flex items-center justify-center">
