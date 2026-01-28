@@ -23,20 +23,22 @@ function SignInForm() {
         setError(null);
         const formData = new FormData(e.target as HTMLFormElement);
         formData.set("flow", flow);
-        
-        console.log("[SignIn] Attempting sign in with flow:", flow);
-        console.log("[SignIn] Form data entries:", Object.fromEntries(formData.entries()));
-        
+
         void signIn("password", formData)
-          .then((result) => {
-            console.log("[SignIn] Sign in successful, result:", result);
+          .then(() => {
             setLoading(false);
           })
           .catch((err) => {
-            console.error("[SignIn] Sign in error:", err);
-            console.error("[SignIn] Error message:", err.message);
-            console.error("[SignIn] Error stack:", err.stack);
-            setError(err.message);
+            // Show user-friendly error messages
+            let errorMessage = "An error occurred. Please try again.";
+            if (err.message?.includes("InvalidAccountId") || err.message?.includes("Invalid")) {
+              errorMessage = flow === "signIn"
+                ? "Invalid email or password. Please try again."
+                : "Could not create account. Please try again.";
+            } else if (err.message?.includes("already exists")) {
+              errorMessage = "An account with this email already exists.";
+            }
+            setError(errorMessage);
             setLoading(false);
           });
       }}
@@ -108,13 +110,11 @@ function AuthenticatedContent() {
     if (approvalStatus === null && !isCreatingRecord && !recordCreated && !creationError) {
       setIsCreatingRecord(true);
       ensurePendingUserRecord()
-        .then((result) => {
-          console.log("[SignIn] Ensured pending user record:", result);
+        .then(() => {
           setRecordCreated(true);
           setIsCreatingRecord(false);
         })
-        .catch((err) => {
-          console.error("[SignIn] Error ensuring pending user record:", err);
+        .catch(() => {
           setIsCreatingRecord(false);
           setCreationError(true); // Prevent infinite retries
         });
