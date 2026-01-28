@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 // Query to check if a user is approved for admin access
 export const getUserApprovalStatus = query({
@@ -343,6 +344,12 @@ export const ensurePendingUserRecord = mutation({
     v.null()
   ),
   handler: async (ctx) => {
+    // Get the authenticated user ID
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return null;
+    }
+
     const identity = await ctx.auth.getUserIdentity();
     if (!identity?.email) {
       return null;
@@ -375,21 +382,10 @@ export const ensurePendingUserRecord = mutation({
     // Generate a secure approval token
     const approvalToken = crypto.randomUUID();
 
-    // Get the user ID from the users table
-    const user = await ctx.db
-      .query("users")
-      .filter((q) => q.eq(q.field("email"), email))
-      .unique();
-
-    if (!user) {
-      // Can't find the user record - shouldn't happen but handle gracefully
-      return null;
-    }
-
     // Create the pending user record
     // Auto-approve if this is the first user
     await ctx.db.insert("pendingUsers", {
-      userId: user._id,
+      userId: userId,
       email: email,
       status: isFirstUser ? "approved" : "pending",
       requestedAt: Date.now(),
