@@ -3,7 +3,7 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Authenticated, Unauthenticated } from "convex/react";
 import Link from "next/link";
@@ -97,7 +97,27 @@ function SignInForm() {
 function AuthenticatedContent() {
   const router = useRouter();
   const approvalStatus = useQuery(api.userApproval.getUserApprovalStatus);
+  const ensurePendingUserRecord = useMutation(api.userApproval.ensurePendingUserRecord);
   const { signOut } = useAuthActions();
+  const [isCreatingRecord, setIsCreatingRecord] = useState(false);
+  const [recordCreated, setRecordCreated] = useState(false);
+
+  // If no approval record exists, create one
+  useEffect(() => {
+    if (approvalStatus === null && !isCreatingRecord && !recordCreated) {
+      setIsCreatingRecord(true);
+      ensurePendingUserRecord()
+        .then((result) => {
+          console.log("[SignIn] Ensured pending user record:", result);
+          setRecordCreated(true);
+          setIsCreatingRecord(false);
+        })
+        .catch((err) => {
+          console.error("[SignIn] Error ensuring pending user record:", err);
+          setIsCreatingRecord(false);
+        });
+    }
+  }, [approvalStatus, isCreatingRecord, recordCreated, ensurePendingUserRecord]);
 
   useEffect(() => {
     if (approvalStatus?.status === "approved") {
@@ -105,8 +125,8 @@ function AuthenticatedContent() {
     }
   }, [approvalStatus, router]);
 
-  // Loading state
-  if (approvalStatus === undefined) {
+  // Loading state - also show loading if record was just created (waiting for query to update)
+  if (approvalStatus === undefined || isCreatingRecord || (approvalStatus === null && recordCreated)) {
     return (
       <div className="flex flex-col gap-4 w-full bg-white/95 backdrop-blur-sm p-8 rounded-xl shadow-2xl">
         <div className="flex items-center justify-center py-4">
@@ -181,30 +201,37 @@ function AuthenticatedContent() {
     );
   }
 
-  // No approval record yet
+  // No approval record yet - this should rarely show since we auto-create records
+  // Show a retry option in case something went wrong
   return (
     <div className="flex flex-col gap-6 w-full bg-white/95 backdrop-blur-sm p-8 rounded-xl shadow-2xl">
       <div className="flex items-center justify-center">
         <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center">
           <svg className="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
       </div>
       <div className="text-center">
         <h2 className="text-xl font-semibold text-gray-800 mb-2">
-          Account Created
+          Setting Up Your Account
         </h2>
         <p className="text-gray-600 text-sm">
-          Your account has been created. An administrator has been notified and will review your access request.
-        </p>
-        <p className="text-gray-500 text-sm mt-4">
-          You will be able to access the admin panel once your account is approved.
+          Please wait while we set up your account...
         </p>
       </div>
       <button
+        onClick={() => {
+          setRecordCreated(false);
+          setIsCreatingRecord(false);
+        }}
+        className="mt-2 bg-amber-500 hover:bg-amber-600 text-white font-medium py-2 px-4 rounded-lg cursor-pointer transition-colors"
+      >
+        Retry
+      </button>
+      <button
         onClick={() => signOut()}
-        className="mt-2 text-amber-600 hover:text-amber-700 text-sm font-medium cursor-pointer transition-colors"
+        className="text-amber-600 hover:text-amber-700 text-sm font-medium cursor-pointer transition-colors"
       >
         Sign out
       </button>

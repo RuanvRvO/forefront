@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 // Query to check if a user is approved for admin access
 export const getUserApprovalStatus = query({
@@ -325,5 +326,90 @@ export const declineUserFromAdmin = mutation({
     });
 
     return null;
+  },
+});
+
+// Mutation to ensure a pending user record exists for the current user
+// This serves as a fallback if the auth callback didn't run properly
+// Auto-approves if this is the first user (no existing users)
+export const ensurePendingUserRecord = mutation({
+  args: {},
+  returns: v.union(
+    v.object({
+      status: v.union(v.literal("pending"), v.literal("approved"), v.literal("declined")),
+      email: v.string(),
+      isNewRecord: v.boolean(),
+    }),
+    v.null()
+  ),
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity?.email) {
+      return null;
+    }
+
+    const email = identity.email;
+
+    // Check if a record already exists
+    const existing = await ctx.db
+      .query("pendingUsers")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .unique();
+
+    if (existing) {
+      return {
+        status: existing.status,
+        email: existing.email,
+        isNewRecord: false,
+      };
+    }
+
+    // No existing record - need to create one
+    // Check if there are any existing users in the pendingUsers table
+    const existingUsers = await ctx.db
+      .query("pendingUsers")
+      .take(1);
+
+    const isFirstUser = existingUsers.length === 0;
+
+    // Generate a secure approval token
+    const approvalToken = crypto.randomUUID();
+
+    // Get the user ID from the users table
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("email"), email))
+      .unique();
+
+    if (!user) {
+      // Can't find the user record - shouldn't happen but handle gracefully
+      return null;
+    }
+
+    // Create the pending user record
+    // Auto-approve if this is the first user
+    await ctx.db.insert("pendingUsers", {
+      userId: user._id,
+      email: email,
+      status: isFirstUser ? "approved" : "pending",
+      requestedAt: Date.now(),
+      reviewedAt: isFirstUser ? Date.now() : undefined,
+      approvalToken,
+    });
+
+    // If not the first user, send approval email to admin
+    if (!isFirstUser) {
+      await ctx.scheduler.runAfter(0, internal.userApprovalActions.sendApprovalEmail, {
+        email: email,
+        approvalToken: approvalToken,
+      });
+    }
+
+    const status: "approved" | "pending" = isFirstUser ? "approved" : "pending";
+    return {
+      status,
+      email: email,
+      isNewRecord: true,
+    };
   },
 });
