@@ -23,11 +23,19 @@ function SignInForm() {
         setError(null);
         const formData = new FormData(e.target as HTMLFormElement);
         formData.set("flow", flow);
+        
+        console.log("[SignIn] Attempting sign in with flow:", flow);
+        console.log("[SignIn] Form data entries:", Object.fromEntries(formData.entries()));
+        
         void signIn("password", formData)
-          .then(() => {
+          .then((result) => {
+            console.log("[SignIn] Sign in successful, result:", result);
             setLoading(false);
           })
           .catch((err) => {
+            console.error("[SignIn] Sign in error:", err);
+            console.error("[SignIn] Error message:", err.message);
+            console.error("[SignIn] Error stack:", err.stack);
             setError(err.message);
             setLoading(false);
           });
