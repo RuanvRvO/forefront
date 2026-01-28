@@ -3,6 +3,21 @@ import { internalMutation, internalQuery, mutation, query } from "./_generated/s
 import { internal } from "./_generated/api";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
+// Helper function to get user's email from authAccounts table
+async function getUserEmailFromAuth(ctx: any, userId: any): Promise<string | null> {
+  // Look up the user's email from the authAccounts table
+  // Password provider stores email as providerAccountId
+  const authAccount = await ctx.db
+    .query("authAccounts")
+    .filter((q: any) => q.eq(q.field("userId"), userId))
+    .first();
+
+  if (authAccount?.providerAccountId) {
+    return authAccount.providerAccountId;
+  }
+  return null;
+}
+
 // Query to check if a user is approved for admin access
 export const getUserApprovalStatus = query({
   args: {},
@@ -15,13 +30,14 @@ export const getUserApprovalStatus = query({
   ),
   handler: async (ctx) => {
     try {
-      const identity = await ctx.auth.getUserIdentity();
-      if (!identity) {
+      // Get the authenticated user ID
+      const userId = await getAuthUserId(ctx);
+      if (!userId) {
         return null;
       }
 
-      // The identity email is available directly
-      const email = identity.email;
+      // Get the user's email from authAccounts
+      const email = await getUserEmailFromAuth(ctx, userId);
       if (!email) {
         return null;
       }
@@ -182,12 +198,15 @@ export const listPendingUsers = query({
   ),
   handler: async (ctx) => {
     // Check if the current user is approved
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity?.email) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       return [];
     }
 
-    const userEmail = identity.email;
+    const userEmail = await getUserEmailFromAuth(ctx, userId);
+    if (!userEmail) {
+      return [];
+    }
 
     const currentUser = await ctx.db
       .query("pendingUsers")
@@ -229,12 +248,15 @@ export const listAllUsers = query({
   ),
   handler: async (ctx) => {
     // Check if the current user is approved
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity?.email) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       return [];
     }
 
-    const userEmail = identity.email;
+    const userEmail = await getUserEmailFromAuth(ctx, userId);
+    if (!userEmail) {
+      return [];
+    }
 
     const currentUser = await ctx.db
       .query("pendingUsers")
@@ -270,12 +292,15 @@ export const approveUserFromAdmin = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     // Check if the current user is approved
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity?.email) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
-    const userEmail = identity.email;
+    const userEmail = await getUserEmailFromAuth(ctx, userId);
+    if (!userEmail) {
+      throw new Error("Not authenticated");
+    }
 
     const currentUser = await ctx.db
       .query("pendingUsers")
@@ -304,12 +329,15 @@ export const declineUserFromAdmin = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     // Check if the current user is approved
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity?.email) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
-    const userEmail = identity.email;
+    const userEmail = await getUserEmailFromAuth(ctx, userId);
+    if (!userEmail) {
+      throw new Error("Not authenticated");
+    }
 
     const currentUser = await ctx.db
       .query("pendingUsers")
@@ -352,15 +380,13 @@ export const ensurePendingUserRecord = mutation({
       return null;
     }
 
-    const identity = await ctx.auth.getUserIdentity();
-    console.log("[ensurePendingUserRecord] identity:", identity);
-    if (!identity?.email) {
-      console.log("[ensurePendingUserRecord] No email in identity, returning null");
+    // Get the user's email from authAccounts table
+    const email = await getUserEmailFromAuth(ctx, userId);
+    console.log("[ensurePendingUserRecord] email from authAccounts:", email);
+    if (!email) {
+      console.log("[ensurePendingUserRecord] No email found in authAccounts, returning null");
       return null;
     }
-
-    const email = identity.email;
-    console.log("[ensurePendingUserRecord] email:", email);
 
     // Check if a record already exists
     const existing = await ctx.db
