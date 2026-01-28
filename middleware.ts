@@ -4,21 +4,17 @@ import {
   nextjsMiddlewareRedirect,
 } from "@convex-dev/auth/nextjs/server";
 
-const isSignInPage = createRouteMatcher(["/signin"]);
 const isProtectedRoute = createRouteMatcher(["/admin", "/server"]);
 
 export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
   const isAuthenticated = await convexAuth.isAuthenticated();
   
-  // Redirect authenticated users from signin page to admin
-  if (isSignInPage(request) && isAuthenticated) {
-    return nextjsMiddlewareRedirect(request, "/admin");
-  }
-  
   // Redirect unauthenticated users from protected routes to signin
   if (isProtectedRoute(request) && !isAuthenticated) {
     return nextjsMiddlewareRedirect(request, "/signin");
   }
+  
+  // Let the signin page handle authenticated users (it checks approval status)
 });
 
 export const config = {
