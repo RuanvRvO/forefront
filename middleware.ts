@@ -5,23 +5,21 @@ import {
 } from "@convex-dev/auth/nextjs/server";
 
 const isSignInPage = createRouteMatcher(["/signin"]);
-const isProtectedRoute = createRouteMatcher(["/server"]);
+const isProtectedRoute = createRouteMatcher(["/admin", "/server"]);
 
 export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
-  console.log("[Proxy] Request URL:", request.url);
-  console.log("[Proxy] Request method:", request.method);
+  const isAuthenticated = await convexAuth.isAuthenticated();
   
-  if (isSignInPage(request) && (await convexAuth.isAuthenticated())) {
-    console.log("[Proxy] Authenticated user on signin page, redirecting to /");
-    return nextjsMiddlewareRedirect(request, "/");
+  // Redirect authenticated users from signin page to admin
+  if (isSignInPage(request) && isAuthenticated) {
+    return nextjsMiddlewareRedirect(request, "/admin");
   }
-  if (isProtectedRoute(request) && !(await convexAuth.isAuthenticated())) {
-    console.log("[Proxy] Unauthenticated user on protected route, redirecting to /signin");
+  
+  // Redirect unauthenticated users from protected routes to signin
+  if (isProtectedRoute(request) && !isAuthenticated) {
     return nextjsMiddlewareRedirect(request, "/signin");
   }
-  
-  console.log("[Proxy] Passing through request");
-}, { verbose: true });
+});
 
 export const config = {
   // The following matcher runs middleware on all routes
