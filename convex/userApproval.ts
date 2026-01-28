@@ -7,14 +7,39 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 async function getUserEmailFromAuth(ctx: any, userId: any): Promise<string | null> {
   // Look up the user's email from the authAccounts table
   // Password provider stores email as providerAccountId
-  const authAccount = await ctx.db
+  console.log("[getUserEmailFromAuth] Looking up email for userId:", userId);
+
+  // Try using the index first
+  let authAccount = await ctx.db
     .query("authAccounts")
-    .filter((q: any) => q.eq(q.field("userId"), userId))
+    .withIndex("by_userId", (q: any) => q.eq("userId", userId))
     .first();
 
+  console.log("[getUserEmailFromAuth] Index query result:", authAccount ? "found" : "not found");
+
+  // Fallback to filter if index query returns nothing
+  if (!authAccount) {
+    authAccount = await ctx.db
+      .query("authAccounts")
+      .filter((q: any) => q.eq(q.field("userId"), userId))
+      .first();
+    console.log("[getUserEmailFromAuth] Filter query result:", authAccount ? "found" : "not found");
+  }
+
   if (authAccount?.providerAccountId) {
+    console.log("[getUserEmailFromAuth] Found email:", authAccount.providerAccountId);
     return authAccount.providerAccountId;
   }
+
+  // Debug: List all authAccounts to see what's there
+  const allAccounts = await ctx.db.query("authAccounts").take(5);
+  console.log("[getUserEmailFromAuth] Sample authAccounts:", JSON.stringify(allAccounts.map((a: any) => ({
+    id: a._id,
+    userId: a.userId,
+    provider: a.provider,
+    providerAccountId: a.providerAccountId
+  }))));
+
   return null;
 }
 
@@ -374,13 +399,17 @@ export const ensurePendingUserRecord = mutation({
   handler: async (ctx) => {
     // Get the authenticated user ID
     const userId = await getAuthUserId(ctx);
+    console.log("[ensurePendingUserRecord] userId:", userId);
     if (!userId) {
+      console.log("[ensurePendingUserRecord] No userId found");
       return null;
     }
 
     // Get the user's email from authAccounts table
     const email = await getUserEmailFromAuth(ctx, userId);
+    console.log("[ensurePendingUserRecord] email:", email);
     if (!email) {
+      console.log("[ensurePendingUserRecord] No email found for userId:", userId);
       return null;
     }
 
