@@ -4,8 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
-import { Heart, Users, TrendingUp, Sparkles, Calendar, Clock, MapPin, Video, Mail, MessageCircle, Phone, LogIn } from 'lucide-react';
-import Link from 'next/link';
+import { Heart, Users, TrendingUp, Sparkles, Calendar, Clock, MapPin, Video, Mail, MessageCircle, Phone } from 'lucide-react';
 
 export default function LandingPage() {
   const [email, setEmail] = useState('');
@@ -70,17 +69,6 @@ export default function LandingPage() {
     <div className="min-h-screen font-sans">
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center">
-        {/* Sign In Button */}
-        <div className="absolute top-6 right-6 z-20">
-          <Link
-            href="/signin"
-            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white font-medium rounded-lg border border-white/30 transition-colors backdrop-blur-sm"
-          >
-            <LogIn className="w-4 h-4" />
-            Sign In
-          </Link>
-        </div>
-
         {/* Background Image */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
