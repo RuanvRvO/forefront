@@ -346,16 +346,21 @@ export const ensurePendingUserRecord = mutation({
   handler: async (ctx) => {
     // Get the authenticated user ID
     const userId = await getAuthUserId(ctx);
+    console.log("[ensurePendingUserRecord] userId:", userId);
     if (!userId) {
+      console.log("[ensurePendingUserRecord] No userId, returning null");
       return null;
     }
 
     const identity = await ctx.auth.getUserIdentity();
+    console.log("[ensurePendingUserRecord] identity:", identity);
     if (!identity?.email) {
+      console.log("[ensurePendingUserRecord] No email in identity, returning null");
       return null;
     }
 
     const email = identity.email;
+    console.log("[ensurePendingUserRecord] email:", email);
 
     // Check if a record already exists
     const existing = await ctx.db
@@ -363,13 +368,18 @@ export const ensurePendingUserRecord = mutation({
       .withIndex("by_email", (q) => q.eq("email", email))
       .unique();
 
+    console.log("[ensurePendingUserRecord] existing record:", existing);
+
     if (existing) {
+      console.log("[ensurePendingUserRecord] Found existing record, returning it");
       return {
         status: existing.status,
         email: existing.email,
         isNewRecord: false,
       };
     }
+
+    console.log("[ensurePendingUserRecord] No existing record, creating new one");
 
     // No existing record - need to create one
     // Check if there are any existing users in the pendingUsers table
@@ -384,7 +394,7 @@ export const ensurePendingUserRecord = mutation({
 
     // Create the pending user record
     // Auto-approve if this is the first user
-    await ctx.db.insert("pendingUsers", {
+    const newRecordId = await ctx.db.insert("pendingUsers", {
       userId: userId,
       email: email,
       status: isFirstUser ? "approved" : "pending",
@@ -392,6 +402,8 @@ export const ensurePendingUserRecord = mutation({
       reviewedAt: isFirstUser ? Date.now() : undefined,
       approvalToken,
     });
+
+    console.log("[ensurePendingUserRecord] Created new record with id:", newRecordId, "isFirstUser:", isFirstUser);
 
     // If not the first user, send approval email to admin
     if (!isFirstUser) {
@@ -402,6 +414,7 @@ export const ensurePendingUserRecord = mutation({
     }
 
     const status: "approved" | "pending" = isFirstUser ? "approved" : "pending";
+    console.log("[ensurePendingUserRecord] Returning status:", status);
     return {
       status,
       email: email,
