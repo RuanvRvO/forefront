@@ -9,38 +9,34 @@ async function getUserEmailFromAuth(ctx: any, userId: any): Promise<string | nul
   // Password provider stores email as providerAccountId
   console.log("[getUserEmailFromAuth] Looking up email for userId:", userId);
 
-  // Try using the index first
-  let authAccount = await ctx.db
-    .query("authAccounts")
-    .withIndex("by_userId", (q: any) => q.eq("userId", userId))
-    .first();
-
-  console.log("[getUserEmailFromAuth] Index query result:", authAccount ? "found" : "not found");
-
-  // Fallback to filter if index query returns nothing
-  if (!authAccount) {
-    authAccount = await ctx.db
+  try {
+    // Use filter to find the auth account (more reliable than index which might not exist)
+    const authAccount = await ctx.db
       .query("authAccounts")
       .filter((q: any) => q.eq(q.field("userId"), userId))
       .first();
-    console.log("[getUserEmailFromAuth] Filter query result:", authAccount ? "found" : "not found");
+
+    console.log("[getUserEmailFromAuth] Query result:", authAccount ? "found" : "not found");
+
+    if (authAccount?.providerAccountId) {
+      console.log("[getUserEmailFromAuth] Found email:", authAccount.providerAccountId);
+      return authAccount.providerAccountId;
+    }
+
+    // Debug: List all authAccounts to see what's there
+    const allAccounts = await ctx.db.query("authAccounts").take(5);
+    console.log("[getUserEmailFromAuth] Sample authAccounts:", JSON.stringify(allAccounts.map((a: any) => ({
+      id: a._id,
+      visibleUserId: a.userId,
+      provider: a.provider,
+      hasProviderAccountId: !!a.providerAccountId
+    }))));
+
+    return null;
+  } catch (error) {
+    console.error("[getUserEmailFromAuth] Error:", error);
+    return null;
   }
-
-  if (authAccount?.providerAccountId) {
-    console.log("[getUserEmailFromAuth] Found email:", authAccount.providerAccountId);
-    return authAccount.providerAccountId;
-  }
-
-  // Debug: List all authAccounts to see what's there
-  const allAccounts = await ctx.db.query("authAccounts").take(5);
-  console.log("[getUserEmailFromAuth] Sample authAccounts:", JSON.stringify(allAccounts.map((a: any) => ({
-    id: a._id,
-    userId: a.userId,
-    provider: a.provider,
-    providerAccountId: a.providerAccountId
-  }))));
-
-  return null;
 }
 
 // Query to check if a user is approved for admin access
