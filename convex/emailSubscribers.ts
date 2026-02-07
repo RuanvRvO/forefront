@@ -21,7 +21,7 @@ export const subscribe = mutation({
       .first();
 
     if (existing) {
-      throw new Error("This email is already subscribed");
+      return { success: true, alreadySubscribed: true };
     }
 
     // Subscribe the email

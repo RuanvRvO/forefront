@@ -1,14 +1,31 @@
 "use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
+import { useState, type ReactNode } from 'react';
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
-import { Heart, Users, TrendingUp, Sparkles, Calendar, Clock, MapPin, Video, Mail, MessageCircle, Phone } from 'lucide-react';
+import { Calendar, Clock, MapPin, Video, Mail, MessageCircle, BookOpen } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
+function Verse({ children, reference, verse }: { children: ReactNode; reference: string; verse: string }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <p className="cursor-pointer hover:text-blue-700 transition-colors">
+          {children}
+        </p>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="bg-slate-800 text-white max-w-xs px-4 py-3 rounded-lg shadow-xl">
+        <p className="font-semibold text-amber-400 text-sm mb-1">{reference}</p>
+        <p className="text-gray-300 italic text-xs leading-relaxed">{verse}</p>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
 
 export default function LandingPage() {
   const [email, setEmail] = useState('');
-  const [subscribeStatus, setSubscribeStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [subscribeStatus, setSubscribeStatus] = useState<'idle' | 'loading' | 'success' | 'already' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
   // Fetch meetings from Convex
@@ -23,13 +40,16 @@ export default function LandingPage() {
     setErrorMessage('');
 
     try {
-      await subscribe({
+      const result = await subscribe({
         email,
         source: 'landing_page',
       });
-      setSubscribeStatus('success');
-      setEmail(''); // Clear the input
-      // Reset success message after 3 seconds
+      if (result?.alreadySubscribed) {
+        setSubscribeStatus('already');
+      } else {
+        setSubscribeStatus('success');
+      }
+      setEmail('');
       setTimeout(() => setSubscribeStatus('idle'), 3000);
     } catch (error) {
       setSubscribeStatus('error');
@@ -42,28 +62,6 @@ export default function LandingPage() {
     }
   };
 
-  const values = [
-    {
-      icon: Heart,
-      title: 'Self-Care First',
-      description: 'We believe that to help others, we must first help ourselves. Personal growth is the foundation of collective impact.',
-    },
-    {
-      icon: Users,
-      title: 'Community Support',
-      description: 'Together we&apos;re stronger. Our community provides a safe space for growth, learning, and mutual encouragement.',
-    },
-    {
-      icon: TrendingUp,
-      title: 'Continuous Growth',
-      description: 'Improvement is a journey, not a destination. We celebrate progress and support each other through challenges.',
-    },
-    {
-      icon: Sparkles,
-      title: 'Positive Impact',
-      description: 'As we uplift ourselves, we naturally uplift those around us, creating a ripple effect of positive change.',
-    },
-  ];
 
   return (
     <div className="min-h-screen font-sans">
@@ -115,56 +113,129 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Our Mission Section */}
-      <section id="mission" className="py-20 bg-white">
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-semibold text-center text-gray-800 mb-6">
-            Our Mission
-          </h2>
-          <p className="text-center text-gray-600 max-w-3xl mx-auto mb-16">
-            We&apos;re building a movement of individuals committed to personal development and mutual support. By investing in ourselves, we create stronger communities and a better world.
-          </p>
+      {/* Vision, Mission & Sponsor Message Section */}
+      <section id="mission" className="py-24 bg-gradient-to-b from-slate-50 to-white">
+        <div className="max-w-5xl mx-auto px-4">
 
-          {/* Who We Are - Image and Text */}
-          <div className="flex flex-col lg:flex-row gap-12 items-center mb-20">
-            <div className="lg:w-1/2">
-              <Image
-                src="/scrabble-quote.jpg"
-                alt="Love People Use Things - The Opposite Never Works"
-                width={500}
-                height={500}
-                className="rounded-xl shadow-lg w-full max-w-md mx-auto"
-              />
-            </div>
-            <div className="lg:w-1/2">
-              <h3 className="text-2xl font-semibold text-gray-800 mb-6">Who We Are</h3>
-              <p className="text-gray-600 mb-4">
-                We&apos;re a diverse group of individuals from all walks of life, united by a common goal: to become the best versions of ourselves while helping others do the same.
-              </p>
-              <p className="text-gray-600 mb-4">
-                Our approach is simple but powerful. We start with ourselves—working on our mindset, habits, and personal development. As we grow, we share our experiences, support one another, and create a culture of continuous improvement.
-              </p>
-              <p className="text-gray-600">
-                Whether you&apos;re just starting your personal development journey or you&apos;ve been on this path for years, you&apos;ll find a welcoming community here.
-              </p>
-            </div>
+          {/* Section Title */}
+          <div className="text-center mb-14">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-3">
+              Who We Are
+            </h2>
+            <p className="text-gray-500 max-w-xl mx-auto">
+              Rooted in Christ. Led by the Spirit. Equipped by His Word.
+            </p>
           </div>
 
-          {/* Values Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {values.map((value, index) => (
-              <div
-                key={index}
-                className="bg-amber-50/50 rounded-xl p-6 hover:shadow-lg transition-shadow"
-              >
-                <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mb-4">
-                  <value.icon className="w-7 h-7 text-amber-600" />
-                </div>
-                <h4 className="text-lg font-semibold text-gray-800 mb-2">{value.title}</h4>
-                <p className="text-gray-600 text-sm">{value.description}</p>
+          {/* Vision & Mission Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+            <Card className="border-blue-100/80 bg-gradient-to-br from-blue-50/80 to-white shadow-md hover:shadow-lg transition-all duration-300">
+              <CardHeader>
+                <CardTitle className="text-2xl md:text-3xl font-bold text-gray-900">
+                  Vision
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 leading-relaxed text-base">
+                  To be a Christ-rooted ministry, led by the Holy Spirit and equipped in God&apos;s Word, to share the truth of Christ through loving and respectful conversations.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-blue-100/80 bg-gradient-to-br from-blue-50/80 to-white shadow-md hover:shadow-lg transition-all duration-300">
+              <CardHeader>
+                <CardTitle className="text-2xl md:text-3xl font-bold text-gray-900">
+                  Mission
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 leading-relaxed text-base">
+                  To grow a platform for courageous disciples of Jesus - grounded in Scripture, strengthened in faith, and committed to encouraging and sharpening one another. Equipped with God&apos;s truth and love, we serve our communities and boldly share the Gospel, building His Kingdom and reaching those who are lost.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sponsor Message Card */}
+          <Card className="border-blue-100/80 bg-gradient-to-br from-blue-50/80 to-white shadow-md">
+            <CardHeader className="text-center pb-0">
+              <div className="mx-auto w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-3">
+                <BookOpen className="w-6 h-6 text-blue-600" />
               </div>
-            ))}
-          </div>
+              <CardTitle className="text-2xl md:text-3xl font-bold text-gray-900">
+                A Message From Our Sponsor
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TooltipProvider>
+                <div className="text-gray-600 leading-relaxed space-y-8 max-w-3xl mx-auto text-center text-base">
+                  <div className="space-y-2">
+                    <Verse reference="Jeremiah 29:7" verse="Also, seek the peace and prosperity of the city to which I have carried you into exile. Pray to the LORD for it, because if it prospers, you too will prosper.">
+                      Seek the good of the place where God has put you, and pray for it, because your well-being is tied to its well-being.
+                    </Verse>
+                    <Verse reference="Philippians 4:8" verse="Finally, brothers and sisters, whatever is true, whatever is noble, whatever is right, whatever is pure, whatever is lovely, whatever is admirable — if anything is excellent or praiseworthy — think about such things.">
+                      Also fix your mind on what is true, honourable, pure, excellent, and what is worthy of praise.
+                    </Verse>
+                    <Verse reference="2 Timothy 1:7" verse="For the Spirit God gave us does not make us timid, but gives us power, love and self-discipline.">
+                      As God has not given us a spirit of fear, but power, love, and self-discipline.
+                    </Verse>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Verse reference="1 Corinthians 9:25" verse="Everyone who competes in the games goes into strict training. They do it to get a crown that will not last, but we do it to get a crown that will last forever.">
+                      Everyone who competes in the games goes into strict training. They do it to get a crown that will not last, but we do it to get a crown that will last forever.
+                    </Verse>
+                    <Verse reference="1 Corinthians 9:26" verse="Therefore I do not run like someone running aimlessly; I do not fight like a boxer beating the air.">
+                      Therefore, do not run like someone running aimlessly; do not fight like a boxer beating the air.
+                    </Verse>
+                    <Verse reference="Ephesians 2:10" verse="For we are God's handiwork, created in Christ Jesus to do good works, which God prepared in advance for us to do.">
+                      For you are God&apos;s handiwork, created in Christ Jesus to do good works, which God prepared in advance for you to do.
+                    </Verse>
+                    <Verse reference="1 Thessalonians 5:11" verse="Therefore encourage one another and build each other up, just as in fact you are doing.">
+                      And so encourage one another and build each other up.
+                    </Verse>
+                    <Verse reference="1 Peter 3:15" verse="But in your hearts revere Christ as Lord. Always be prepared to give an answer to everyone who asks you to give the reason for the hope that you have. But do this with gentleness and respect.">
+                      Share the gospel through prepared, respectful conversations.
+                    </Verse>
+                    <Verse reference="Ephesians 4:12" verse="To equip his people for works of service, so that the body of Christ may be built up.">
+                      Equip His people for works of service, so that the body of Christ may be built up.
+                    </Verse>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Verse reference="Colossians 2:6–7" verse="So then, just as you received Christ Jesus as Lord, continue to live your lives in him, rooted and built up in him, strengthened in the faith as you were taught, and overflowing with thankfulness.">
+                      So then, just as you received Christ Jesus as Lord, continue to live your lives in him, rooted and built up in him, strengthened in the faith as you were taught, and overflowing with thankfulness.
+                    </Verse>
+                    <Verse reference="John 13:35" verse="By this everyone will know that you are my disciples, if you love one another.">
+                      By this, everyone will know that you are the Lord&apos;s disciples, if you love one another.
+                    </Verse>
+                    <Verse reference="Joshua 1:9" verse="Have I not commanded you? Be strong and courageous. Do not be afraid; do not be discouraged, for the LORD your God will be with you wherever you go.">
+                      Have you not been commanded? To be strong and courageous, not to be afraid nor discouraged, for the Lord your God will be with you wherever you go.
+                    </Verse>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Verse reference="2 Timothy 3:17" verse="So that the servant of God may be thoroughly equipped for every good work.">
+                      Be equipped by His Word for every good work.
+                    </Verse>
+                    <Verse reference="Mark 16:15" verse="He said to them, 'Go into all the world and preach the gospel to all creation.'">
+                      As you are called to go and share the gospel.
+                    </Verse>
+                    <Verse reference="Joshua 1:8" verse="Keep this Book of the Law always on your lips; meditate on it day and night, so that you may be careful to do everything written in it. Then you will be prosperous and successful.">
+                      Keep this Book of the Law always on your lips; meditate on it day and night, so that you may be careful to do everything written in it. Then you will be prosperous and successful.
+                    </Verse>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Verse reference="Joshua 1:9" verse="Have I not commanded you? Be strong and courageous. Do not be afraid; do not be discouraged, for the LORD your God will be with you wherever you go.">
+                      I ask again, have you not been commanded? To be strong and courageous, not to be afraid nor discouraged, for the Lord your God will be with you wherever you go.
+                    </Verse>
+                  </div>
+                </div>
+              </TooltipProvider>
+            </CardContent>
+          </Card>
+
         </div>
       </section>
 
@@ -267,7 +338,7 @@ export default function LandingPage() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-gray-400">•</span>
-                    For online meetings, email us for the link
+                    For online meetings, join the <a href="https://discord.gg/2jAaBbfCFA" target="_blank" rel="noopener noreferrer" className="text-amber-600 hover:underline">Discord</a>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-gray-400">•</span>
@@ -331,6 +402,11 @@ export default function LandingPage() {
                     ✓ Successfully subscribed! We&apos;ll keep you updated.
                   </p>
                 )}
+                {subscribeStatus === 'already' && (
+                  <p className="text-amber-400 text-sm">
+                    You&apos;re already subscribed!
+                  </p>
+                )}
                 {subscribeStatus === 'error' && (
                   <p className="text-red-400 text-sm">
                     ✗ {errorMessage}
@@ -351,7 +427,7 @@ export default function LandingPage() {
                     </div>
                     <div>
                       <h4 className="font-medium text-gray-800">Email Us</h4>
-                      <p className="text-amber-600">info@forefront.org</p>
+                      <p className="text-amber-600">info@forefront-ministries.com</p>
                       <p className="text-gray-500 text-sm">We typically respond within 24 hours</p>
                     </div>
                   </div>
@@ -363,18 +439,7 @@ export default function LandingPage() {
                     <div>
                       <h4 className="font-medium text-gray-800">Join Our Community</h4>
                       <p className="text-gray-600 text-sm">Connect with members on our Discord server</p>
-                      <a href="#" className="text-amber-600 hover:underline">discord.gg/qsb6afSs</a>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Phone className="w-5 h-5 text-amber-600" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-gray-800">Questions?</h4>
-                      <p className="text-gray-600 text-sm">Schedule a call with our team</p>
-                      <a href="#" className="text-amber-600 hover:underline">Book a conversation</a>
+                      <a href="https://discord.gg/2jAaBbfCFA" target="_blank" rel="noopener noreferrer" className="text-amber-600 hover:underline">discord.gg/2jAaBbfCFA</a>
                     </div>
                   </div>
                 </div>

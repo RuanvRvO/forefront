@@ -3,7 +3,11 @@
     "allow": [
       "Bash(npm run lint)",
       "Bash(npx convex:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(npx shadcn@latest init:*)",
+      "Bash(npm install:*)",
+      "Bash(dir:*)",
+      "Bash(npx next build:*)"
     ]
   }
 }
