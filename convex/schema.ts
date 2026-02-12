@@ -17,6 +17,7 @@ export default defineSchema({
     time: v.string(),
     location: v.string(),
     type: v.union(v.literal("Online"), v.literal("In-Person")),
+    leader: v.optional(v.string()), // Meeting leader (admin-only)
     codaId: v.optional(v.string()), // For tracking the source from Coda
   }).index("by_date", ["date"]),
   emailSubscribers: defineTable({

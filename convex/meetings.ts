@@ -14,14 +14,33 @@ export const listMeetings = query({
       time: v.string(),
       location: v.string(),
       type: v.union(v.literal("Online"), v.literal("In-Person")),
+      leader: v.optional(v.string()),
       codaId: v.optional(v.string()),
     })
   ),
   handler: async (ctx) => {
     const meetings = await ctx.db
       .query("meetings")
-      .order("desc")
       .collect();
+
+    // Parse start time from time string like "10:00 AM - 2:00 PM"
+    const getStartMinutes = (time: string): number => {
+      const match = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+      if (!match) return 0;
+      let hours = parseInt(match[1]);
+      const minutes = parseInt(match[2]);
+      const period = match[3].toUpperCase();
+      if (period === "PM" && hours !== 12) hours += 12;
+      if (period === "AM" && hours === 12) hours = 0;
+      return hours * 60 + minutes;
+    };
+
+    // Sort by date ascending, then by start time ascending
+    meetings.sort((a, b) => {
+      const dateCompare = a.date.localeCompare(b.date);
+      if (dateCompare !== 0) return dateCompare;
+      return getStartMinutes(a.time) - getStartMinutes(b.time);
+    });
 
     return meetings;
   },
@@ -36,6 +55,7 @@ export const addMeeting = mutation({
     time: v.string(),
     location: v.string(),
     type: v.union(v.literal("Online"), v.literal("In-Person")),
+    leader: v.optional(v.string()),
     codaId: v.optional(v.string()),
   },
   returns: v.id("meetings"),
@@ -47,6 +67,7 @@ export const addMeeting = mutation({
       time: args.time,
       location: args.location,
       type: args.type,
+      leader: args.leader,
       codaId: args.codaId,
     });
     return meetingId;
@@ -63,6 +84,7 @@ export const updateMeeting = mutation({
     time: v.optional(v.string()),
     location: v.optional(v.string()),
     type: v.optional(v.union(v.literal("Online"), v.literal("In-Person"))),
+    leader: v.optional(v.string()),
   },
   returns: v.null(),
   handler: async (ctx, args) => {

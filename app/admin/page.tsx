@@ -19,6 +19,7 @@ interface MeetingFormData {
   time: string;
   location: string;
   type: MeetingType;
+  leader: string;
 }
 
 const emptyFormData: MeetingFormData = {
@@ -28,6 +29,7 @@ const emptyFormData: MeetingFormData = {
   time: "",
   location: "",
   type: "In-Person",
+  leader: "",
 };
 
 function MeetingModal({
@@ -47,9 +49,32 @@ function MeetingModal({
 }) {
   const [formData, setFormData] = useState<MeetingFormData>(initialData);
 
+  // Parse time string like "10:00 AM - 2:00 PM" into components
+  const parseTime = (timeStr: string) => {
+    const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)\s*-\s*(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (match) {
+      return {
+        startHour: match[1], startMinute: match[2], startPeriod: match[3].toUpperCase(),
+        endHour: match[4], endMinute: match[5], endPeriod: match[6].toUpperCase(),
+      };
+    }
+    return { startHour: "9", startMinute: "00", startPeriod: "AM", endHour: "10", endMinute: "00", endPeriod: "AM" };
+  };
+
+  const [timeParts, setTimeParts] = useState(parseTime(initialData.time));
+
   useEffect(() => {
-    setFormData(initialData);
+    const parts = parseTime(initialData.time);
+    setTimeParts(parts);
+    const timeStr = `${parts.startHour}:${parts.startMinute} ${parts.startPeriod} - ${parts.endHour}:${parts.endMinute} ${parts.endPeriod}`;
+    setFormData({ ...initialData, time: timeStr });
   }, [initialData]);
+
+  const updateTime = (parts: typeof timeParts) => {
+    setTimeParts(parts);
+    const timeStr = `${parts.startHour}:${parts.startMinute} ${parts.startPeriod} - ${parts.endHour}:${parts.endMinute} ${parts.endPeriod}`;
+    setFormData((prev) => ({ ...prev, time: timeStr }));
+  };
 
   if (!isOpen) return null;
 
@@ -103,31 +128,84 @@ function MeetingModal({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Date
-              </label>
-              <input
-                type="date"
-                required
-                value={formData.date}
-                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all"
-              />
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Date
+            </label>
+            <input
+              type="date"
+              required
+              value={formData.date}
+              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Start Time
+            </label>
+            <div className="flex gap-2">
+              <select
+                value={timeParts.startHour}
+                onChange={(e) => updateTime({ ...timeParts, startHour: e.target.value })}
+                className="flex-1 px-2 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all"
+              >
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
+                  <option key={h} value={String(h)}>{h}</option>
+                ))}
+              </select>
+              <select
+                value={timeParts.startMinute}
+                onChange={(e) => updateTime({ ...timeParts, startMinute: e.target.value })}
+                className="flex-1 px-2 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all"
+              >
+                {["00", "15", "30", "45"].map((m) => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+              <select
+                value={timeParts.startPeriod}
+                onChange={(e) => updateTime({ ...timeParts, startPeriod: e.target.value })}
+                className="flex-1 px-2 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all"
+              >
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Time
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.time}
-                onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all"
-                placeholder="e.g. 10:00 AM - 2:00 PM"
-              />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              End Time
+            </label>
+            <div className="flex gap-2">
+              <select
+                value={timeParts.endHour}
+                onChange={(e) => updateTime({ ...timeParts, endHour: e.target.value })}
+                className="flex-1 px-2 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all"
+              >
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
+                  <option key={h} value={String(h)}>{h}</option>
+                ))}
+              </select>
+              <select
+                value={timeParts.endMinute}
+                onChange={(e) => updateTime({ ...timeParts, endMinute: e.target.value })}
+                className="flex-1 px-2 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all"
+              >
+                {["00", "15", "30", "45"].map((m) => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+              <select
+                value={timeParts.endPeriod}
+                onChange={(e) => updateTime({ ...timeParts, endPeriod: e.target.value })}
+                className="flex-1 px-2 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all"
+              >
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
             </div>
           </div>
 
@@ -173,6 +251,19 @@ function MeetingModal({
                 <span className="text-slate-700 dark:text-slate-300">Online</span>
               </label>
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Meeting Leader
+            </label>
+            <input
+              type="text"
+              value={formData.leader}
+              onChange={(e) => setFormData({ ...formData, leader: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all"
+              placeholder="Who is leading this meeting?"
+            />
           </div>
 
           <div className="flex gap-3 pt-4">
@@ -275,6 +366,7 @@ function MeetingsManager() {
       time: meeting.time,
       location: meeting.location,
       type: meeting.type,
+      leader: meeting.leader ?? "",
     });
     setIsModalOpen(true);
   };
@@ -334,17 +426,7 @@ function MeetingsManager() {
   };
 
   const formatTime = (timeStr: string) => {
-    try {
-      const [hours, minutes] = timeStr.split(":");
-      const date = new Date();
-      date.setHours(parseInt(hours), parseInt(minutes));
-      return date.toLocaleTimeString("en-ZA", {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } catch {
-      return timeStr;
-    }
+    return timeStr;
   };
 
   return (
@@ -427,21 +509,27 @@ function MeetingsManager() {
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleEdit(meeting)}
-                    className="p-2 text-slate-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors"
-                    title="Edit meeting"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(meeting)}
-                    className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                    title="Delete meeting"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                <div className="flex items-center gap-4">
+                  <span className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-300">
+                    <Users className="w-4 h-4" />
+                    {meeting.leader || "Undecided"}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleEdit(meeting)}
+                      className="p-2 text-slate-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors"
+                      title="Edit meeting"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(meeting)}
+                      className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                      title="Delete meeting"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
