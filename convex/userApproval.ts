@@ -4,6 +4,7 @@ import { internal } from "./_generated/api";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
 // Helper function to get user's email from authAccounts table
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function getUserEmailFromAuth(ctx: any, userId: any): Promise<string | null> {
   // Look up the user's email from the authAccounts table
   // Password provider stores email as providerAccountId
@@ -13,6 +14,7 @@ async function getUserEmailFromAuth(ctx: any, userId: any): Promise<string | nul
     // Use filter to find the auth account (more reliable than index which might not exist)
     const authAccount = await ctx.db
       .query("authAccounts")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .filter((q: any) => q.eq(q.field("userId"), userId))
       .first();
 
@@ -25,6 +27,7 @@ async function getUserEmailFromAuth(ctx: any, userId: any): Promise<string | nul
 
     // Debug: List all authAccounts to see what's there
     const allAccounts = await ctx.db.query("authAccounts").take(5);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     console.log("[getUserEmailFromAuth] Sample authAccounts:", JSON.stringify(allAccounts.map((a: any) => ({
       id: a._id,
       visibleUserId: a.userId,

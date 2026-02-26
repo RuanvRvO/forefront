@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from 'react';
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
-import { Calendar, Clock, MapPin, Video, Mail, MessageCircle, BookOpen, ArrowDown, ChevronDown, Users } from 'lucide-react';
+import { Calendar, Clock, MapPin, Video, Mail, MessageCircle, BookOpen, ChevronDown } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
@@ -129,10 +129,6 @@ export default function LandingPage() {
             </Button>
           </div>
 
-          {/* Scroll indicator */}
-          <div className="animate-bounce">
-            <ArrowDown className="w-6 h-6 text-white mx-auto" />
-          </div>
         </div>
       </section>
 
@@ -426,28 +422,30 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
-                name: 'Anonymous',
+                name: 'Ruan',
                 role: 'Team Member',
-                image: '/team/member1.jpg',
-                about: 'Passionate about equipping believers to live boldly for Christ. Dedicated to creating a space where disciples grow together, grounded in Scripture, and step into their calling with courage and conviction.',
+                image: '/ruan.jpeg',
+                about: "Hi, I'm Ruan, co-host of Forefront. I am all about the pursuit of Truth! I thirst for more wisdom, understanding and righteousness, and that is why my role at Forefront is focused on equipping others on how to both understand and share their faith in Jesus Christ.",
               },
               {
-                name: 'Anonymous',
+                name: 'Bonga',
                 role: 'Team Member',
-                image: '/team/member2.jpg',
-                about: 'Dedicated to serving the community and building meaningful connections through faith. Believes in the power of encouragement and walking alongside others on their journey with Christ.',
+                image: '/bonga.jpeg',
+                about: "Hi, I am Bonga, co-host of Forefront. Driven to inspire believers to follow Jesus courageously, cultivating communities rooted in biblical truth. Devoted to serving for the Kingdom. Passionate about teaching Scripture while fostering inclusive, grace-filled spaces where individuals are supported, strengthened, and confident in their growth.",
               },
               {
-                name: 'Anonymous',
+                name: 'Quintin',
                 role: 'Team Member',
-                image: '/team/member3.jpg',
-                about: 'Committed to deepening understanding of God\'s Word and sharing it with others. Finds joy in creating welcoming spaces where everyone feels valued and heard in their walk of faith.',
+                image: '/quintin.jpeg',
+                objectPosition: 'center 27.5%',
+                about: "Hi, I'm Quintin. My role as support is to welcome you to and answer any questions you might have about Forefront. I'll also be assisting in guiding any Biblical questions you might have to the correct people for scripture based answers. I'm excited to be part of something bigger that aims to help people grow in their relationship with Jesus.",
               },
               {
-                name: 'Anonymous',
+                name: 'Theo',
                 role: 'Team Member',
-                image: '/team/member4.jpg',
-                about: 'Driven by a heart for discipleship and a desire to see people transformed by the gospel. Loves facilitating conversations that challenge, inspire, and strengthen the body of Christ.',
+                image: '/theo.jpeg',
+                objectPosition: 'center 20%',
+                about: "Hi, I'm Theo Badenhorst, founder and one of the hosts of Forefront. I manage Forefront, a Christian ministry where we explore faith through open conversations, podcast-style events, and in-person gatherings. I wasn't raised in the Christian faith and have lived a life outside of Christ—like Paul, I haven't yet attained perfection in Him. I've been a Christian for seven years, and I'm passionate about growing in my faith while helping others explore and grow in their understanding of Christianity. We welcome you to join us on our Discord server to engage in our conversations and explore these topics together.",
               },
             ].map((member, index) => (
               <Card key={index} className="shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden">
@@ -456,14 +454,12 @@ export default function LandingPage() {
                     src={member.image}
                     alt={member.name}
                     className="w-full h-full object-cover"
+                    style={member.objectPosition ? { objectPosition: member.objectPosition } : undefined}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.style.display = 'none';
                     }}
                   />
-                  <div className="absolute inset-0 flex items-center justify-center text-slate-400">
-                    <Users className="w-16 h-16" />
-                  </div>
                 </div>
                 <CardContent className="pt-4 pb-3 text-center">
                   <h4 className="text-lg font-bold text-slate-900">{member.name}</h4>

@@ -61,13 +61,15 @@ function MeetingModal({
     return { startHour: "9", startMinute: "00", startPeriod: "AM", endHour: "10", endMinute: "00", endPeriod: "AM" };
   };
 
-  const [timeParts, setTimeParts] = useState(parseTime(initialData.time));
+  const [timeParts, setTimeParts] = useState(() => parseTime(initialData.time));
 
   useEffect(() => {
     const parts = parseTime(initialData.time);
-    setTimeParts(parts);
     const timeStr = `${parts.startHour}:${parts.startMinute} ${parts.startPeriod} - ${parts.endHour}:${parts.endMinute} ${parts.endPeriod}`;
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setTimeParts(parts);
     setFormData({ ...initialData, time: timeStr });
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [initialData]);
 
   const updateTime = (parts: typeof timeParts) => {

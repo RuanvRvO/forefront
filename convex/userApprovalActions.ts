@@ -137,6 +137,7 @@ export const processApproval = internalAction({
     // Update the status
     const newStatus: "approved" | "declined" = args.action === "approve" ? "approved" : "declined";
     await ctx.runMutation(internal.userApproval.updateApprovalStatus, {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       pendingUserId: pendingUser._id as any,
       status: newStatus,
     });
