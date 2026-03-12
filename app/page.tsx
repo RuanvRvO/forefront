@@ -490,7 +490,7 @@ export default function LandingPage() {
             <div className="relative w-full rounded-xl overflow-hidden shadow-md" style={{ paddingBottom: '56.25%' }}>
               <iframe
                 className="absolute inset-0 w-full h-full"
-                src="https://www.youtube.com/embed/sEkEsjssC8k?si=VYLoyu9RSqGpAqpm"
+                src="https://www.youtube.com/embed/JzWjblX-mKA?si=cAiBaBrlW7GC-3IO"
                 title="Meet the Forefront Team"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
