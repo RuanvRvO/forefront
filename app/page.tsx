@@ -20,8 +20,8 @@ function Verse({ children, reference, verse }: { children: ReactNode; reference:
         </p>
       </TooltipTrigger>
       <TooltipContent side="top" className="bg-popover text-popover-foreground max-w-xs px-4 py-3 rounded-lg shadow-xl">
-        <p className="font-semibold text-amber-500 text-sm mb-1">{reference}</p>
-        <p className="text-muted-foreground italic text-xs leading-relaxed">{verse}</p>
+        <p className="font-semibold text-amber-500 text-base mb-1">{reference}</p>
+        <p className="text-muted-foreground italic text-base leading-relaxed">{verse}</p>
       </TooltipContent>
     </Tooltip>
   );
@@ -162,7 +162,7 @@ export default function LandingPage() {
                 <div className="w-8 h-0.5 bg-amber-500 rounded-full mx-auto mt-2" />
               </CardHeader>
               <CardContent>
-                <p className="text-slate-600 leading-relaxed text-sm">
+                <p className="text-slate-600 leading-relaxed text-base">
                   To be a Christ-rooted ministry, led by the Holy Spirit and equipped in God&apos;s Word, to share the truth of Christ through loving and respectful conversations.
                 </p>
               </CardContent>
@@ -176,7 +176,7 @@ export default function LandingPage() {
                 <div className="w-8 h-0.5 bg-amber-500 rounded-full mx-auto mt-2" />
               </CardHeader>
               <CardContent>
-                <p className="text-slate-600 leading-relaxed text-sm">
+                <p className="text-slate-600 leading-relaxed text-base">
                   To grow a platform for courageous disciples of Jesus - grounded in Scripture, strengthened in faith, and committed to encouraging and sharpening one another. Equipped with God&apos;s truth and love, we serve our communities and boldly share the Gospel, building His Kingdom and reaching those who are lost.
                 </p>
               </CardContent>
@@ -204,68 +204,74 @@ export default function LandingPage() {
               <div className="overflow-hidden">
                 <CardContent className="pt-0">
                   <TooltipProvider>
-                    <div className="text-slate-600 leading-relaxed space-y-6 max-w-3xl mx-auto text-center text-sm">
-                      <div className="space-y-1.5">
-                        <Verse reference="Jeremiah 29:7" verse="Also, seek the peace and prosperity of the city to which I have carried you into exile. Pray to the LORD for it, because if it prospers, you too will prosper.">
-                          Seek the good of the place where God has put you, and pray for it, because your well-being is tied to its well-being.
-                        </Verse>
-                        <Verse reference="Philippians 4:8" verse="Finally, brothers and sisters, whatever is true, whatever is noble, whatever is right, whatever is pure, whatever is lovely, whatever is admirable — if anything is excellent or praiseworthy — think about such things.">
-                          Also fix your mind on what is true, honourable, pure, excellent, and what is worthy of praise.
-                        </Verse>
-                        <Verse reference="2 Timothy 1:7" verse="For the Spirit God gave us does not make us timid, but gives us power, love and self-discipline.">
-                          As God has not given us a spirit of fear, but power, love, and self-discipline.
-                        </Verse>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-0 max-w-4xl mx-auto text-slate-600 leading-relaxed text-base">
+                      {/* Left page */}
+                      <div className="space-y-6 text-left px-6 pb-6 md:border-r md:border-dashed md:border-slate-300">
+                        <div className="space-y-1.5">
+                          <Verse reference="Jeremiah 29:7" verse="Also, seek the peace and prosperity of the city to which I have carried you into exile. Pray to the LORD for it, because if it prospers, you too will prosper.">
+                            Seek the good of the place where God has put you, and pray for it, because your well-being is tied to its well-being.
+                          </Verse>
+                          <Verse reference="Philippians 4:8" verse="Finally, brothers and sisters, whatever is true, whatever is noble, whatever is right, whatever is pure, whatever is lovely, whatever is admirable — if anything is excellent or praiseworthy — think about such things.">
+                            Also fix your mind on what is true, honourable, pure, excellent, and what is worthy of praise.
+                          </Verse>
+                          <Verse reference="2 Timothy 1:7" verse="For the Spirit God gave us does not make us timid, but gives us power, love and self-discipline.">
+                            As God has not given us a spirit of fear, but power, love, and self-discipline.
+                          </Verse>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <Verse reference="1 Corinthians 9:25" verse="Everyone who competes in the games goes into strict training. They do it to get a crown that will not last, but we do it to get a crown that will last forever.">
+                            Everyone who competes in the games goes into strict training. They do it to get a crown that will not last, but we do it to get a crown that will last forever.
+                          </Verse>
+                          <Verse reference="1 Corinthians 9:26" verse="Therefore I do not run like someone running aimlessly; I do not fight like a boxer beating the air.">
+                            Therefore, do not run like someone running aimlessly; do not fight like a boxer beating the air.
+                          </Verse>
+                          <Verse reference="Ephesians 2:10" verse="For we are God's handiwork, created in Christ Jesus to do good works, which God prepared in advance for us to do.">
+                            For you are God&apos;s handiwork, created in Christ Jesus to do good works, which God prepared in advance for you to do.
+                          </Verse>
+                          <Verse reference="1 Thessalonians 5:11" verse="Therefore encourage one another and build each other up, just as in fact you are doing.">
+                            And so encourage one another and build each other up.
+                          </Verse>
+                          <Verse reference="1 Peter 3:15" verse="But in your hearts revere Christ as Lord. Always be prepared to give an answer to everyone who asks you to give the reason for the hope that you have. But do this with gentleness and respect.">
+                            Share the gospel through prepared, respectful conversations.
+                          </Verse>
+                          <Verse reference="Ephesians 4:12" verse="To equip his people for works of service, so that the body of Christ may be built up.">
+                            Equip His people for works of service, so that the body of Christ may be built up.
+                          </Verse>
+                        </div>
                       </div>
 
-                      <div className="space-y-1.5">
-                        <Verse reference="1 Corinthians 9:25" verse="Everyone who competes in the games goes into strict training. They do it to get a crown that will not last, but we do it to get a crown that will last forever.">
-                          Everyone who competes in the games goes into strict training. They do it to get a crown that will not last, but we do it to get a crown that will last forever.
-                        </Verse>
-                        <Verse reference="1 Corinthians 9:26" verse="Therefore I do not run like someone running aimlessly; I do not fight like a boxer beating the air.">
-                          Therefore, do not run like someone running aimlessly; do not fight like a boxer beating the air.
-                        </Verse>
-                        <Verse reference="Ephesians 2:10" verse="For we are God's handiwork, created in Christ Jesus to do good works, which God prepared in advance for us to do.">
-                          For you are God&apos;s handiwork, created in Christ Jesus to do good works, which God prepared in advance for you to do.
-                        </Verse>
-                        <Verse reference="1 Thessalonians 5:11" verse="Therefore encourage one another and build each other up, just as in fact you are doing.">
-                          And so encourage one another and build each other up.
-                        </Verse>
-                        <Verse reference="1 Peter 3:15" verse="But in your hearts revere Christ as Lord. Always be prepared to give an answer to everyone who asks you to give the reason for the hope that you have. But do this with gentleness and respect.">
-                          Share the gospel through prepared, respectful conversations.
-                        </Verse>
-                        <Verse reference="Ephesians 4:12" verse="To equip his people for works of service, so that the body of Christ may be built up.">
-                          Equip His people for works of service, so that the body of Christ may be built up.
-                        </Verse>
-                      </div>
+                      {/* Right page */}
+                      <div className="space-y-6 text-left px-6 pb-6">
+                        <div className="space-y-1.5">
+                          <Verse reference="Colossians 2:6–7" verse="So then, just as you received Christ Jesus as Lord, continue to live your lives in him, rooted and built up in him, strengthened in the faith as you were taught, and overflowing with thankfulness.">
+                            So then, just as you received Christ Jesus as Lord, continue to live your lives in him, rooted and built up in him, strengthened in the faith as you were taught, and overflowing with thankfulness.
+                          </Verse>
+                          <Verse reference="John 13:35" verse="By this everyone will know that you are my disciples, if you love one another.">
+                            By this, everyone will know that you are the Lord&apos;s disciples, if you love one another.
+                          </Verse>
+                          <Verse reference="Joshua 1:9" verse="Have I not commanded you? Be strong and courageous. Do not be afraid; do not be discouraged, for the LORD your God will be with you wherever you go.">
+                            Have you not been commanded? To be strong and courageous, not to be afraid nor discouraged, for the Lord your God will be with you wherever you go.
+                          </Verse>
+                        </div>
 
-                      <div className="space-y-1.5">
-                        <Verse reference="Colossians 2:6–7" verse="So then, just as you received Christ Jesus as Lord, continue to live your lives in him, rooted and built up in him, strengthened in the faith as you were taught, and overflowing with thankfulness.">
-                          So then, just as you received Christ Jesus as Lord, continue to live your lives in him, rooted and built up in him, strengthened in the faith as you were taught, and overflowing with thankfulness.
-                        </Verse>
-                        <Verse reference="John 13:35" verse="By this everyone will know that you are my disciples, if you love one another.">
-                          By this, everyone will know that you are the Lord&apos;s disciples, if you love one another.
-                        </Verse>
-                        <Verse reference="Joshua 1:9" verse="Have I not commanded you? Be strong and courageous. Do not be afraid; do not be discouraged, for the LORD your God will be with you wherever you go.">
-                          Have you not been commanded? To be strong and courageous, not to be afraid nor discouraged, for the Lord your God will be with you wherever you go.
-                        </Verse>
-                      </div>
+                        <div className="space-y-1.5">
+                          <Verse reference="2 Timothy 3:17" verse="So that the servant of God may be thoroughly equipped for every good work.">
+                            Be equipped by His Word for every good work.
+                          </Verse>
+                          <Verse reference="Mark 16:15" verse="He said to them, 'Go into all the world and preach the gospel to all creation.'">
+                            As you are called to go and share the gospel.
+                          </Verse>
+                          <Verse reference="Joshua 1:8" verse="Keep this Book of the Law always on your lips; meditate on it day and night, so that you may be careful to do everything written in it. Then you will be prosperous and successful.">
+                            Keep this Book of the Law always on your lips; meditate on it day and night, so that you may be careful to do everything written in it. Then you will be prosperous and successful.
+                          </Verse>
+                        </div>
 
-                      <div className="space-y-1.5">
-                        <Verse reference="2 Timothy 3:17" verse="So that the servant of God may be thoroughly equipped for every good work.">
-                          Be equipped by His Word for every good work.
-                        </Verse>
-                        <Verse reference="Mark 16:15" verse="He said to them, 'Go into all the world and preach the gospel to all creation.'">
-                          As you are called to go and share the gospel.
-                        </Verse>
-                        <Verse reference="Joshua 1:8" verse="Keep this Book of the Law always on your lips; meditate on it day and night, so that you may be careful to do everything written in it. Then you will be prosperous and successful.">
-                          Keep this Book of the Law always on your lips; meditate on it day and night, so that you may be careful to do everything written in it. Then you will be prosperous and successful.
-                        </Verse>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <Verse reference="Joshua 1:9" verse="Have I not commanded you? Be strong and courageous. Do not be afraid; do not be discouraged, for the LORD your God will be with you wherever you go.">
-                          I ask again, have you not been commanded? To be strong and courageous, not to be afraid nor discouraged, for the Lord your God will be with you wherever you go.
-                        </Verse>
+                        <div className="space-y-1.5">
+                          <Verse reference="Joshua 1:9" verse="Have I not commanded you? Be strong and courageous. Do not be afraid; do not be discouraged, for the LORD your God will be with you wherever you go.">
+                            I ask again, have you not been commanded? To be strong and courageous, not to be afraid nor discouraged, for the Lord your God will be with you wherever you go.
+                          </Verse>
+                        </div>
                       </div>
                     </div>
                   </TooltipProvider>
@@ -299,7 +305,7 @@ export default function LandingPage() {
             <Card className="shadow-md">
               <CardContent className="pt-6 text-center py-12">
                 <p className="text-slate-600 text-base">No upcoming meetings scheduled at the moment.</p>
-                <p className="text-slate-400 text-sm mt-2">Check back soon for new sessions!</p>
+                <p className="text-slate-400 text-base mt-2">Check back soon for new sessions!</p>
               </CardContent>
             </Card>
           ) : (
@@ -317,9 +323,9 @@ export default function LandingPage() {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <p className="text-slate-600 text-sm leading-relaxed">{meeting.description}</p>
+                    <p className="text-slate-600 text-base leading-relaxed">{meeting.description}</p>
                     <Separator />
-                    <div className="flex flex-wrap gap-6 text-sm text-slate-500">
+                    <div className="flex flex-wrap gap-6 text-base text-slate-500">
                       <span className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-amber-600" />
                         {formatDate(meeting.date)}
@@ -404,6 +410,7 @@ export default function LandingPage() {
         </div>
       </section>
 
+
       {/* Meet the Team Section */}
       <section className="relative py-24 bg-slate-200">
         {/* Oval backdrop */}
@@ -419,7 +426,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {[
               {
                 name: 'Ruan',
@@ -432,13 +439,6 @@ export default function LandingPage() {
                 role: 'Team Member',
                 image: '/bonga.jpeg',
                 about: "Hi, I am Bonga, co-host of Forefront. Driven to inspire believers to follow Jesus courageously, cultivating communities rooted in biblical truth. Devoted to serving for the Kingdom. Passionate about teaching Scripture while fostering inclusive, grace-filled spaces where individuals are supported, strengthened, and confident in their growth.",
-              },
-              {
-                name: 'Quintin',
-                role: 'Team Member',
-                image: '/quintin.jpeg',
-                objectPosition: 'center 27.5%',
-                about: "Hi, I'm Quintin. My role as support is to welcome you to and answer any questions you might have about Forefront. I'll also be assisting in guiding any Biblical questions you might have to the correct people for scripture based answers. I'm excited to be part of something bigger that aims to help people grow in their relationship with Jesus.",
               },
               {
                 name: 'Theo',
@@ -528,7 +528,7 @@ export default function LandingPage() {
               </p>
 
               <h4 className="text-lg font-medium text-amber-400 mb-4">Get Updates</h4>
-              <p className="text-gray-300 text-sm mb-4">
+              <p className="text-gray-300 text-base mb-4">
                 Stay informed about upcoming meetings, special events, and community news.
               </p>
               <form onSubmit={handleSubscribe} className="flex flex-col gap-2">
@@ -552,17 +552,17 @@ export default function LandingPage() {
                   </Button>
                 </div>
                 {subscribeStatus === 'success' && (
-                  <p className="text-green-400 text-sm">
+                  <p className="text-green-400 text-base">
                     Successfully subscribed! We&apos;ll keep you updated.
                   </p>
                 )}
                 {subscribeStatus === 'already' && (
-                  <p className="text-amber-400 text-sm">
+                  <p className="text-amber-400 text-base">
                     You&apos;re already subscribed!
                   </p>
                 )}
                 {subscribeStatus === 'error' && (
-                  <p className="text-destructive text-sm">
+                  <p className="text-destructive text-base">
                     {errorMessage}
                   </p>
                 )}
@@ -583,7 +583,7 @@ export default function LandingPage() {
                     <div>
                       <h4 className="font-medium text-foreground">Email Us</h4>
                       <p className="text-amber-600">info@forefront-ministries.com</p>
-                      <p className="text-muted-foreground text-sm">We typically respond within 24 hours</p>
+                      <p className="text-muted-foreground text-base">We typically respond within 24 hours</p>
                     </div>
                   </div>
 
@@ -593,14 +593,14 @@ export default function LandingPage() {
                     </div>
                     <div>
                       <h4 className="font-medium text-foreground">Join Our Community</h4>
-                      <p className="text-muted-foreground text-sm">Connect with members on our Discord server</p>
+                      <p className="text-muted-foreground text-base">Connect with members on our Discord server</p>
                       <a href="https://discord.gg/2jAaBbfCFA" target="_blank" rel="noopener noreferrer" className="text-amber-600 hover:underline">discord.gg/2jAaBbfCFA</a>
                     </div>
                   </div>
 
                   <Separator />
 
-                  <p className="text-muted-foreground italic text-sm">
+                  <p className="text-muted-foreground italic text-base">
                     &quot;The journey of a thousand miles begins with a single step. Take yours with us.&quot;
                   </p>
                 </CardContent>
@@ -624,7 +624,7 @@ export default function LandingPage() {
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
             </a>
           </div>
-          <p className="text-gray-500 text-xs">
+          <p className="text-gray-500 text-base">
             &copy; 2026 Forefront. All rights reserved.
           </p>
         </div>
