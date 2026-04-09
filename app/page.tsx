@@ -19,7 +19,7 @@ function Verse({ children, reference, verse }: { children: ReactNode; reference:
           {children}
         </p>
       </TooltipTrigger>
-      <TooltipContent side="top" className="bg-popover text-popover-foreground max-w-xs px-4 py-3 rounded-lg shadow-xl">
+      <TooltipContent side="top" sideOffset={8} avoidCollisions className="bg-popover text-popover-foreground max-w-[min(320px,85vw)] px-4 py-3 rounded-lg shadow-xl">
         <p className="font-semibold text-amber-500 text-base mb-1">{reference}</p>
         <p className="text-muted-foreground italic text-base leading-relaxed">{verse}</p>
       </TooltipContent>
@@ -85,7 +85,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen font-sans">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center pb-80">
+      <section className="relative min-h-screen flex items-center justify-center pb-48 sm:pb-80">
         {/* Background Image */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -101,14 +101,14 @@ export default function LandingPage() {
 
         {/* Hero Content */}
         <div className="relative z-10 text-center px-4 max-w-5xl mx-auto">
-          <h1 className="text-6xl md:text-8xl lg:text-9xl font-extrabold text-white mb-4 tracking-tight uppercase drop-shadow-lg">
+          <h1 className="text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-extrabold text-white mb-4 tracking-tight uppercase drop-shadow-lg">
             Forefront
           </h1>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-light text-white/80 tracking-[0.25em] uppercase mb-10">
+          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-light text-white/80 tracking-[0.15em] sm:tracking-[0.25em] uppercase mb-10">
             Ministry
           </h2>
           <Separator className="w-24 mx-auto mb-10 bg-amber-500 h-0.5" />
-          <p className="text-xl md:text-2xl lg:text-3xl font-light mb-36">
+          <p className="text-lg md:text-2xl lg:text-3xl font-light mb-16 sm:mb-36">
             <span className="text-white/90">Uplift Others by </span>
             <span className="text-amber-400 italic">Uplifting Ourselves</span>
           </p>
@@ -133,7 +133,7 @@ export default function LandingPage() {
       </section>
 
       {/* Gradient bridge: hero dark → content */}
-      <div className="h-48 bg-gradient-to-b from-slate-900 via-slate-600 to-slate-200" />
+      <div className="h-24 sm:h-48 bg-gradient-to-b from-slate-900 via-slate-600 to-slate-200" />
 
       {/* Vision, Mission & Sponsor Message Section */}
       <section id="mission" className="relative pb-24 pt-16 bg-slate-200">
@@ -143,7 +143,7 @@ export default function LandingPage() {
 
           {/* Section Header */}
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-2">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-slate-900 mb-2">
               Who We Are
             </h2>
             <div className="w-12 h-1 bg-amber-500 rounded-full mx-auto mb-4" />
@@ -156,7 +156,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
             <Card className="shadow-md hover:shadow-lg transition-all duration-300">
               <CardHeader>
-                <CardTitle className="text-3xl font-bold text-slate-900 text-center">
+                <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 text-center">
                   Vision
                 </CardTitle>
                 <div className="w-8 h-0.5 bg-amber-500 rounded-full mx-auto mt-2" />
@@ -170,7 +170,7 @@ export default function LandingPage() {
 
             <Card className="shadow-md hover:shadow-lg transition-all duration-300">
               <CardHeader>
-                <CardTitle className="text-3xl font-bold text-slate-900 text-center">
+                <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 text-center">
                   Mission
                 </CardTitle>
                 <div className="w-8 h-0.5 bg-amber-500 rounded-full mx-auto mt-2" />
@@ -189,7 +189,7 @@ export default function LandingPage() {
               onClick={() => setSponsorOpen(!sponsorOpen)}
               className="w-full cursor-pointer text-center px-6 pt-6 pb-3 flex flex-col items-center gap-2 hover:bg-slate-50 transition-colors"
             >
-              <span className="text-3xl font-semibold text-slate-900">
+              <span className="text-xl sm:text-3xl font-semibold text-slate-900">
                 A Message From Our Sponsor
               </span>
               <div className="w-8 h-0.5 bg-amber-500 rounded-full" />
@@ -203,7 +203,7 @@ export default function LandingPage() {
             >
               <div className="overflow-hidden">
                 <CardContent className="pt-0">
-                  <TooltipProvider>
+                  <TooltipProvider delayDuration={0}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-0 max-w-4xl mx-auto text-slate-600 leading-relaxed text-base">
                       {/* Left page */}
                       <div className="space-y-6 text-left px-6 pb-6 md:border-r md:border-dashed md:border-slate-300">
@@ -291,7 +291,7 @@ export default function LandingPage() {
 
           {/* Section Header */}
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-2">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-slate-900 mb-2">
               Upcoming Meetings
             </h2>
             <div className="w-12 h-1 bg-amber-500 rounded-full mx-auto mb-4" />
@@ -354,7 +354,7 @@ export default function LandingPage() {
         <div className="absolute inset-x-0 top-8 bottom-8 mx-auto max-w-6xl bg-white/60 rounded-[4rem] md:rounded-[6rem] shadow-inner pointer-events-none" />
         <div className="relative max-w-4xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-2">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-slate-900 mb-2">
               First Time Joining?
             </h2>
             <div className="w-12 h-1 bg-amber-500 rounded-full mx-auto mb-4" />
@@ -417,7 +417,7 @@ export default function LandingPage() {
         <div className="absolute inset-x-0 top-8 bottom-8 mx-auto max-w-6xl bg-white/60 rounded-[4rem] md:rounded-[6rem] shadow-inner pointer-events-none" />
         <div className="relative max-w-5xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-2">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-slate-900 mb-2">
               Meet the Team
             </h2>
             <div className="w-12 h-1 bg-amber-500 rounded-full mx-auto mb-4" />
@@ -485,7 +485,7 @@ export default function LandingPage() {
 
           {/* Team Introduction Video */}
           <div className="mt-16 max-w-3xl mx-auto">
-            <h3 className="text-3xl md:text-4xl font-semibold text-slate-900 text-center mb-3">Get to Know Us</h3>
+            <h3 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-slate-900 text-center mb-3">Get to Know Us</h3>
             <div className="w-8 h-0.5 bg-amber-500 rounded-full mx-auto mb-4" />
             <div className="relative w-full rounded-xl overflow-hidden shadow-md" style={{ paddingBottom: '56.25%' }}>
               <iframe
@@ -501,7 +501,7 @@ export default function LandingPage() {
       </section>
 
       {/* Gradient bridge: content → dark CTA */}
-      <div className="h-64 bg-gradient-to-b from-slate-200 via-slate-500 to-slate-700" />
+      <div className="h-32 sm:h-64 bg-gradient-to-b from-slate-200 via-slate-500 to-slate-700" />
 
       {/* CTA Section */}
       <section className="py-20 bg-slate-700 relative overflow-hidden">
@@ -519,7 +519,7 @@ export default function LandingPage() {
           <div className="flex flex-col lg:flex-row gap-12">
             {/* Left side - CTA */}
             <div className="lg:w-1/2">
-              <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-white mb-4">
                 Interested to Find Out More?
               </h2>
               <p className="text-gray-300 mb-8">
@@ -532,7 +532,7 @@ export default function LandingPage() {
                 Stay informed about upcoming meetings, special events, and community news.
               </p>
               <form onSubmit={handleSubscribe} className="flex flex-col gap-2">
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Input
                     type="email"
                     placeholder="Enter your email"
@@ -546,7 +546,7 @@ export default function LandingPage() {
                     type="submit"
                     disabled={subscribeStatus === 'loading'}
                     size="lg"
-                    className="bg-amber-500 hover:bg-amber-600 text-white font-medium h-12"
+                    className="bg-amber-500 hover:bg-amber-600 text-white font-medium h-12 w-full sm:w-auto"
                   >
                     {subscribeStatus === 'loading' ? 'Subscribing...' : 'Subscribe'}
                   </Button>
